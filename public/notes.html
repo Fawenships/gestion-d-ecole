@@ -132,7 +132,7 @@
         }
 
         /* =========================
-           STATISTICS
+           STATISTIQUES
         ========================= */
 
         .stats {
@@ -253,6 +253,10 @@
             color: #374151;
         }
 
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
         /* =========================
            TABLE
         ========================= */
@@ -313,12 +317,13 @@
         }
 
         .note-input {
-            width: 90px;
+            width: 100px;
             padding: 9px;
             border: 1px solid #d1d5db;
             border-radius: 6px;
             outline: none;
             text-align: center;
+            font-size: 14px;
         }
 
         .note-input:focus {
@@ -349,6 +354,10 @@
             color: #6b7280;
         }
 
+        /* =========================
+           MESSAGES
+        ========================= */
+
         .message {
             display: none;
             padding: 14px;
@@ -365,6 +374,16 @@
         .message-success {
             background: #dcfce7;
             color: #166534;
+        }
+
+        /* =========================
+           NOTE MAXIMALE
+        ========================= */
+
+        .max-note-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
         }
 
         /* =========================
@@ -727,8 +746,14 @@
                             id="maxGrade"
                             value="100"
                             min="1"
+                            max="400"
                             step="1"
+                            oninput="limitMaxGrade(this)"
                         >
+
+                        <div class="max-note-info">
+                            Maximum autorisé : 400
+                        </div>
 
                     </div>
 
@@ -1201,27 +1226,17 @@
                 }
 
 
+                const selectedClassName =
+                    getSelectedClassName();
+
+
                 students =
                     (data.students || [])
                     .filter(
                         student =>
-                            String(
-                                student.class_id || ""
-                            ) === String(classId)
-                            ||
                             student.class_name ===
-                            getSelectedClassName()
+                            selectedClassName
                     );
-
-
-                /*
-                    Pour le moment, l'API actuelle
-                    ne renvoie pas encore class_id.
-
-                    Si le backend renvoie uniquement
-                    class_name, la comparaison ci-dessus
-                    utilise le nom de la classe.
-                */
 
 
                 displayedStudents =
@@ -1269,7 +1284,9 @@
             if (
                 select.selectedIndex < 0
             ) {
+
                 return "";
+
             }
 
             return select
@@ -1395,16 +1412,96 @@
 
         function getMaxGrade() {
 
-            const value =
+            let value =
                 Number(
                     document.getElementById(
                         "maxGrade"
                     ).value
                 );
 
-            return value > 0
-                ? value
-                : 100;
+
+            if (!Number.isFinite(value)) {
+
+                value = 100;
+
+            }
+
+
+            if (value < 1) {
+
+                value = 1;
+
+            }
+
+
+            if (value > 400) {
+
+                value = 400;
+
+            }
+
+
+            return value;
+
+        }
+
+
+        // =========================
+        // LIMITER NOTE MAXIMALE
+        // =========================
+
+        function limitMaxGrade(input) {
+
+            let value =
+                Number(input.value);
+
+
+            if (value > 400) {
+
+                input.value = 400;
+
+            }
+
+
+            if (value < 1 && input.value !== "") {
+
+                input.value = 1;
+
+            }
+
+
+            /*
+             * Met à jour la limite des champs
+             * de notes déjà affichés.
+             */
+
+            const max =
+                getMaxGrade();
+
+
+            document
+                .querySelectorAll(".note-input")
+                .forEach(
+                    noteInput => {
+
+                        noteInput.max =
+                            max;
+
+                        if (
+                            noteInput.value !== "" &&
+                            Number(noteInput.value) > max
+                        ) {
+
+                            noteInput.value =
+                                max;
+
+                        }
+
+                    }
+                );
+
+
+            updateStatisticsFromInputs();
 
         }
 
@@ -1480,7 +1577,8 @@
 
                 document.getElementById(
                     "classAverage"
-                ).textContent = "—";
+                ).textContent =
+                    "—";
 
                 return;
 
@@ -1641,13 +1739,6 @@
 
         function saveNotes() {
 
-            /*
-                Cette fonction sera reliée
-                à l'API POST des notes lorsque
-                la table "grades" sera créée
-                dans Supabase.
-            */
-
             showSuccess(
                 "La saisie est prête. L'enregistrement dans la base de données sera activé à l'étape suivante."
             );
@@ -1673,6 +1764,16 @@
 
             document.getElementById(
                 "periodSelect"
+            ).value = "";
+
+
+            document.getElementById(
+                "maxGrade"
+            ).value = 100;
+
+
+            document.getElementById(
+                "searchInput"
             ).value = "";
 
 
