@@ -1,1 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Emploi du temps — Gestion École</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    color: #172033;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: #111827;
+    color: white;
+    padding: 25px 15px;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    padding: 0 15px 30px;
+}
+
+.sidebar a {
+    display: block;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 13px 15px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background: #2563eb;
+    color: white;
+}
+
+.main {
+    margin-left: 250px;
+    padding: 30px;
+}
+
+.header {
+    margin-bottom: 25px;
+}
+
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #64748b;
+}
+
+.panel {
+    background: white;
+    border-radius: 14px;
+    padding: 25px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+    margin-bottom: 25px;
+}
+
+.filters {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+select {
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    min-width: 200px;
+    background: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th {
+    background: #f1f5f9;
+    padding: 14px;
+    text-align: left;
+    font-size: 14px;
+}
+
+td {
+    padding: 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.matiere {
+    font-weight: bold;
+}
+
+.prof {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+}
+
+@media (max-width: 800px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+
+    .main {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+    <div class="logo">
+        Gestion École
+    </div>
+
+    <a href="/admin.html">Tableau de bord</a>
+    <a href="/eleves.html">Élèves</a>
+    <a href="/professeurs.html">Professeurs</a>
+    <a href="/classes.html">Classes</a>
+    <a href="/matieres.html">Matières</a>
+    <a href="/presence.html">Présences</a>
+    <a href="/notes.html">Notes</a>
+    <a href="/emploi-du-temps.html" class="active">Emploi du temps</a>
+    <a href="/paiements.html">Paiements</a>
+    <a href="/bulletins.html">Bulletins</a>
+
+</aside>
+
+<main class="main">
+
+    <div class="header">
+        <h1>Emploi du temps</h1>
+        <p>Gestion des horaires des classes et des cours.</p>
+    </div>
+
+    <div class="panel">
+
+        <div class="filters">
+
+            <select id="classe">
+                <option value="">Sélectionner une classe</option>
+                <option>NS1</option>
+                <option>NS2</option>
+                <option>NS3</option>
+                <option>NS4</option>
+                <option>7e année</option>
+                <option>8e année</option>
+                <option>9e année</option>
+            </select>
+
+            <select id="jour">
+                <option value="">Sélectionner un jour</option>
+                <option>Lundi</option>
+                <option>Mardi</option>
+                <option>Mercredi</option>
+                <option>Jeudi</option>
+                <option>Vendredi</option>
+                <option>Samedi</option>
+            </select>
+
+        </div>
+
+    </div>
+
+    <div class="panel">
+
+        <h2>Horaire des cours</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Heure</th>
+                    <th>Matière</th>
+                    <th>Professeur</th>
+                    <th>Salle</th>
+                </tr>
+            </thead>
+
+            <tbody id="emploiTable">
+
+                <tr>
+                    <td>08:00 - 09:00</td>
+                    <td class="matiere">Mathématiques</td>
+                    <td class="prof">Professeur à définir</td>
+                    <td>A1</td>
+                </tr>
+
+                <tr>
+                    <td>09:00 - 10:00</td>
+                    <td class="matiere">Français</td>
+                    <td class="prof">Professeur à définir</td>
+                    <td>A1</td>
+                </tr>
+
+                <tr>
+                    <td>10:00 - 10:30</td>
+                    <td class="matiere">Récréation</td>
+                    <td>—</td>
+                    <td>—</td>
+                </tr>
+
+                <tr>
+                    <td>10:30 - 11:30</td>
+                    <td class="matiere">Sciences</td>
+                    <td class="prof">Professeur à définir</td>
+                    <td>A2</td>
+                </tr>
+
+                <tr>
+                    <td>11:30 - 12:30</td>
+                    <td class="matiere">Histoire</td>
+                    <td class="prof">Professeur à définir</td>
+                    <td>A2</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</main>
+
+<script>
+
+const token = localStorage.getItem("school_token");
+
+if (!token) {
+    window.location.href = "/";
+}
+
+</script>
+
+</body>
+</html>
