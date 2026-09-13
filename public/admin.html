@@ -217,10 +217,6 @@
             font-weight: bold;
         }
 
-        .loading {
-            color: #6b7280;
-        }
-
         /* MOBILE */
 
         @media (max-width: 1000px) {
@@ -281,6 +277,10 @@
 
 <div class="layout">
 
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
     <aside class="sidebar">
 
         <div class="brand">
@@ -295,61 +295,69 @@
 
         </div>
 
+
         <div class="menu-title">
             Administration
         </div>
 
+
         <nav class="menu">
 
-            <a class="active">
+            <a
+                href="/admin.html"
+                class="active"
+            >
                 Tableau de bord
             </a>
 
-            <a>
+            <a href="/eleves.html">
                 Élèves
             </a>
 
-            <a>
+            <a href="/professeurs.html">
                 Professeurs
             </a>
 
-            <a>
+            <a href="/classes.html">
                 Classes
             </a>
 
-            <a>
+            <a href="/matieres.html">
                 Matières
             </a>
 
         </nav>
 
+
         <div class="menu-title">
             Scolarité
         </div>
 
+
         <nav class="menu">
 
-            <a>
+            <a href="/presence.html">
                 Présences
             </a>
 
-            <a>
+            <a href="/notes.html">
                 Notes
             </a>
 
-            <a>
+            <a href="/emploi-du-temps.html">
                 Emploi du temps
             </a>
 
-            <a>
+            <a href="/paiements.html">
                 Paiements
             </a>
 
-            <a>
+            <a href="/bulletins.html">
                 Bulletins
             </a>
 
         </nav>
+
 
         <div class="logout">
 
@@ -362,7 +370,12 @@
     </aside>
 
 
+    <!-- =========================
+         MAIN
+    ========================== -->
+
     <main class="main">
+
 
         <header class="topbar">
 
@@ -370,7 +383,10 @@
                 Tableau de bord
             </div>
 
-            <div class="user" id="userName">
+            <div
+                class="user"
+                id="userName"
+            >
                 Administrateur
             </div>
 
@@ -378,6 +394,7 @@
 
 
         <section class="content">
+
 
             <div class="welcome">
 
@@ -392,7 +409,12 @@
             </div>
 
 
+            <!-- =========================
+                 STATISTIQUES
+            ========================== -->
+
             <div class="cards">
+
 
                 <div class="card">
 
@@ -457,10 +479,16 @@
 
                 </div>
 
+
             </div>
 
 
+            <!-- =========================
+                 INFORMATIONS
+            ========================== -->
+
             <div class="grid">
+
 
                 <div class="panel">
 
@@ -469,6 +497,7 @@
                     </div>
 
                     <div class="panel-body">
+
 
                         <div class="stat-row">
 
@@ -515,6 +544,7 @@
 
                     <div class="panel-body">
 
+
                         <div class="stat-row">
 
                             <span>
@@ -543,13 +573,17 @@
 
                         </div>
 
+
                     </div>
 
                 </div>
 
+
             </div>
 
+
         </section>
+
 
     </main>
 
@@ -558,104 +592,200 @@
 
 <script>
 
-const token = localStorage.getItem("school_token");
+/* ==========================================
+   VERIFICATION DE LA CONNEXION
+========================================== */
+
+const token =
+    localStorage.getItem("school_token");
+
 
 if (!token) {
+
     window.location.href = "/";
+
 }
 
-const storedUser = localStorage.getItem("school_user");
+
+/* ==========================================
+   AFFICHER L'UTILISATEUR
+========================================== */
+
+const storedUser =
+    localStorage.getItem("school_user");
+
 
 if (storedUser) {
 
     try {
 
-        const user = JSON.parse(storedUser);
+        const user =
+            JSON.parse(storedUser);
 
-        document.getElementById("userName").textContent =
-            `${user.first_name} ${user.last_name}`;
+
+        const fullName =
+            `${user.first_name || ""} ${user.last_name || ""}`.trim();
+
+
+        if (fullName) {
+
+            document.getElementById("userName")
+                .textContent = fullName;
+
+        }
 
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            "Erreur utilisateur :",
+            error
+        );
+
     }
 
 }
 
+
+/* ==========================================
+   CHARGER LE TABLEAU DE BORD
+========================================== */
 
 async function loadDashboard() {
 
     try {
 
-        const response = await fetch(
-            "/api/dashboard",
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
+        const response =
+            await fetch(
+                "/api/dashboard",
+                {
+                    method: "GET",
 
-        if (response.status === 401 ||
-            response.status === 403) {
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        if (
+            response.status === 401 ||
+            response.status === 403
+        ) {
 
             logout();
+
             return;
+
         }
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
+
 
         if (!data.success) {
-            throw new Error(data.message);
+
+            throw new Error(
+                data.message ||
+                "Impossible de charger le tableau de bord."
+            );
+
         }
 
-        const dashboard = data.dashboard;
 
-        document.getElementById("studentsCount")
-            .textContent = dashboard.students;
+        const dashboard =
+            data.dashboard;
 
-        document.getElementById("teachersCount")
-            .textContent = dashboard.teachers;
 
-        document.getElementById("classesCount")
-            .textContent = dashboard.classes;
+        document.getElementById(
+            "studentsCount"
+        ).textContent =
+            dashboard.students ?? 0;
 
-        document.getElementById("subjectsCount")
-            .textContent = dashboard.subjects;
 
-        document.getElementById("presentTeachers")
-            .textContent = dashboard.presentTeachers;
+        document.getElementById(
+            "teachersCount"
+        ).textContent =
+            dashboard.teachers ?? 0;
 
-        document.getElementById("lateTeachers")
-            .textContent = dashboard.lateTeachers;
 
-        document.getElementById("databaseStatus")
-            .textContent = "Connectée";
+        document.getElementById(
+            "classesCount"
+        ).textContent =
+            dashboard.classes ?? 0;
+
+
+        document.getElementById(
+            "subjectsCount"
+        ).textContent =
+            dashboard.subjects ?? 0;
+
+
+        document.getElementById(
+            "presentTeachers"
+        ).textContent =
+            dashboard.presentTeachers ?? 0;
+
+
+        document.getElementById(
+            "lateTeachers"
+        ).textContent =
+            dashboard.lateTeachers ?? 0;
+
+
+        document.getElementById(
+            "databaseStatus"
+        ).textContent =
+            "Connectée";
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erreur dashboard :",
+            error
+        );
 
-        document.getElementById("databaseStatus")
-            .textContent = "Erreur";
+
+        document.getElementById(
+            "databaseStatus"
+        ).textContent =
+            "Erreur";
 
     }
 
 }
 
 
+/* ==========================================
+   DECONNEXION
+========================================== */
+
 function logout() {
 
-    localStorage.removeItem("school_token");
-    localStorage.removeItem("school_user");
+    localStorage.removeItem(
+        "school_token"
+    );
+
+    localStorage.removeItem(
+        "school_user"
+    );
+
 
     window.location.href = "/";
 
 }
 
+
+/* ==========================================
+   LANCEMENT
+========================================== */
 
 loadDashboard();
 
 </script>
 
 </body>
+
 </html>
