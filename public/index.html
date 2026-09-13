@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Gestion École — Système de gestion scolaire</title>
+    <title>Connexion — Gestion École</title>
+
+    <meta
+        name="description"
+        content="Connexion à la plateforme de gestion scolaire."
+    >
 
     <style>
         * {
@@ -14,98 +19,200 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                linear-gradient(
+                    135deg,
+                    #0f172a 0%,
+                    #172554 50%,
+                    #1e3a8a 100%
+                );
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #172033;
         }
 
-        header {
-            background: #111827;
-            color: white;
-            padding: 22px 7%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .login {
-            background: white;
-            color: #111827;
-            padding: 11px 20px;
-            border-radius: 7px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .hero {
-            min-height: 75vh;
+        .page {
+            width: 100%;
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 60px 7%;
+            justify-content: center;
+            padding: 25px;
         }
 
-        .hero-content {
-            max-width: 750px;
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 42px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
         }
 
-        .hero h1 {
-            font-size: 48px;
-            line-height: 1.1;
-            margin-bottom: 22px;
+        .brand {
+            text-align: center;
+            margin-bottom: 35px;
         }
 
-        .hero p {
-            font-size: 19px;
-            line-height: 1.7;
-            color: #5b6475;
-            margin-bottom: 30px;
-        }
-
-        .button {
-            display: inline-block;
+        .brand-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 18px;
+            border-radius: 14px;
             background: #2563eb;
-            color: white;
-            padding: 14px 25px;
-            border-radius: 7px;
-            text-decoration: none;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
             font-weight: bold;
         }
 
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            padding: 0 7% 60px;
+        .brand h1 {
+            font-size: 28px;
+            color: #111827;
+            margin-bottom: 8px;
         }
 
-        .feature {
-            background: white;
-            padding: 28px;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .feature h3 {
-            margin-bottom: 10px;
-        }
-
-        .feature p {
+        .brand p {
             color: #667085;
-            line-height: 1.6;
+            font-size: 14px;
         }
 
-        @media (max-width: 800px) {
-            .hero h1 {
-                font-size: 36px;
+        .form-group {
+            margin-bottom: 21px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #344054;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            height: 50px;
+            padding: 0 15px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 15px;
+            color: #101828;
+            background: #ffffff;
+            transition: 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #98a2b3;
+        }
+
+        .login-button {
+            width: 100%;
+            height: 50px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 5px;
+        }
+
+        .login-button:hover {
+            background: #1d4ed8;
+        }
+
+        .login-button:active {
+            transform: translateY(1px);
+        }
+
+        .login-button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            display: none;
+            margin-top: 18px;
+            padding: 13px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.error {
+            display: block;
+            background: #fef3f2;
+            border: 1px solid #fecdca;
+            color: #b42318;
+        }
+
+        .message.success {
+            display: block;
+            background: #ecfdf3;
+            border: 1px solid #abefc6;
+            color: #067647;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 28px;
+            color: #98a2b3;
+            font-size: 12px;
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .spinner {
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 500px) {
+
+            .page {
+                padding: 15px;
             }
 
-            .features {
-                grid-template-columns: 1fr;
+            .login-card {
+                padding: 30px 24px;
+                border-radius: 13px;
+            }
+
+            .brand h1 {
+                font-size: 25px;
             }
         }
     </style>
@@ -113,63 +220,280 @@
 
 <body>
 
-<header>
-    <div class="logo">Gestion École</div>
+<div class="page">
 
-    <a href="/admin.html" class="login">
-        Accéder à l'administration
-    </a>
-</header>
+    <main class="login-card">
 
-<section class="hero">
+        <div class="brand">
 
-    <div class="hero-content">
+            <div class="brand-icon">
+                GE
+            </div>
 
-        <h1>
-            La gestion complète de votre établissement scolaire
-        </h1>
+            <h1>Gestion École</h1>
 
-        <p>
-            Une plateforme moderne pour gérer les élèves, les professeurs,
-            les classes, les matières, les présences, les notes,
-            les paiements et les bulletins scolaires.
-        </p>
+            <p>
+                Connectez-vous à votre espace d'administration
+            </p>
 
-        <a href="/admin.html" class="button">
-            Ouvrir le tableau de bord
-        </a>
+        </div>
 
-    </div>
 
-</section>
+        <form id="loginForm">
 
-<section class="features">
+            <div class="form-group">
 
-    <div class="feature">
-        <h3>Gestion des élèves</h3>
-        <p>
-            Gérez les dossiers, classes, informations et parcours scolaires
-            de vos élèves.
-        </p>
-    </div>
+                <label for="email">
+                    Adresse e-mail
+                </label>
 
-    <div class="feature">
-        <h3>Gestion des professeurs</h3>
-        <p>
-            Suivez les enseignants, leurs matières, leurs classes
-            et leurs présences.
-        </p>
-    </div>
+                <div class="input-wrapper">
 
-    <div class="feature">
-        <h3>Notes et bulletins</h3>
-        <p>
-            Saisissez les notes, calculez les moyennes et préparez
-            les bulletins scolaires.
-        </p>
-    </div>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="admin@mon-ecole.ht"
+                        autocomplete="email"
+                        required
+                    >
 
-</section>
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="password">
+                    Mot de passe
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Votre mot de passe"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="login-button"
+                id="loginButton"
+            >
+                Se connecter
+            </button>
+
+
+            <div
+                id="message"
+                class="message"
+            ></div>
+
+        </form>
+
+
+        <div class="footer">
+            Système de gestion scolaire
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+const loginForm = document.getElementById("loginForm");
+
+const loginButton = document.getElementById("loginButton");
+
+const message = document.getElementById("message");
+
+
+/*
+==================================================
+AFFICHER UN MESSAGE
+==================================================
+*/
+
+function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className = "message " + type;
+
+}
+
+
+/*
+==================================================
+CACHER LE MESSAGE
+==================================================
+*/
+
+function hideMessage() {
+
+    message.textContent = "";
+
+    message.className = "message";
+
+}
+
+
+/*
+==================================================
+CONNEXION
+==================================================
+*/
+
+loginForm.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    hideMessage();
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+
+    if (!email || !password) {
+
+        showMessage(
+            "Veuillez remplir tous les champs.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    loginButton.disabled = true;
+
+    loginButton.innerHTML = `
+        <span class="loading">
+            <span class="spinner"></span>
+            Connexion...
+        </span>
+    `;
+
+
+    try {
+
+        const response = await fetch("/api/login", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+
+        });
+
+
+        let data;
+
+        try {
+
+            data = await response.json();
+
+        } catch (error) {
+
+            throw new Error(
+                "Le serveur a retourné une réponse invalide."
+            );
+
+        }
+
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.message || "E-mail ou mot de passe incorrect."
+            );
+
+        }
+
+
+        /*
+        ==============================================
+        SAUVEGARDER LA SESSION
+        ==============================================
+        */
+
+        localStorage.setItem(
+            "school_token",
+            data.token
+        );
+
+
+        localStorage.setItem(
+            "school_user",
+            JSON.stringify(data.user)
+        );
+
+
+        showMessage(
+            "Connexion réussie. Ouverture du tableau de bord...",
+            "success"
+        );
+
+
+        /*
+        ==============================================
+        REDIRECTION
+        ==============================================
+        */
+
+        setTimeout(function() {
+
+            window.location.href = "/admin.html";
+
+        }, 700);
+
+
+    } catch (error) {
+
+        console.error(
+            "Erreur de connexion :",
+            error
+        );
+
+
+        showMessage(
+            error.message ||
+            "Impossible de se connecter au serveur.",
+            "error"
+        );
+
+
+        loginButton.disabled = false;
+
+        loginButton.textContent =
+            "Se connecter";
+
+    }
+
+});
+
+</script>
 
 </body>
 </html>
