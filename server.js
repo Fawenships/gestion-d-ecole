@@ -431,21 +431,26 @@ app.get(
                 await pool.query(
                     `
                     SELECT
-                        id,
-                        school_id,
-                        first_name,
-                        last_name,
-                        matricule,
-                        date_of_birth,
-                        class_id,
-                        parent_name,
-                        parent_phone,
-                        address,
-                        photo_url,
-                        created_at
-                    FROM students
-                    WHERE school_id = $1
-                    ORDER BY last_name ASC, first_name ASC
+                        s.id,
+                        s.school_id,
+                        s.first_name,
+                        s.last_name,
+                        s.matricule,
+                        s.date_of_birth,
+                        s.gender,
+                        s.phone,
+                        s.class_id,
+                        c.name AS class_name,
+                        s.parent_name,
+                        s.parent_phone,
+                        s.address,
+                        s.photo_url,
+                        s.active,
+                        s.created_at
+                    FROM students s
+                    LEFT JOIN classes c ON c.id = s.class_id
+                    WHERE s.school_id = $1
+                    ORDER BY s.last_name ASC, s.first_name ASC
                     `,
                     [req.user.school_id]
                 );
@@ -489,6 +494,8 @@ app.post(
                 last_name,
                 matricule,
                 date_of_birth,
+                gender,
+                phone,
                 class_id,
                 parent_name,
                 parent_phone,
@@ -542,13 +549,13 @@ app.post(
                 `
                 INSERT INTO students (
                     school_id, first_name, last_name, matricule,
-                    date_of_birth, class_id, parent_name,
+                    date_of_birth, gender, phone, class_id, parent_name,
                     parent_phone, address, photo_url
                 )
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
                 RETURNING
                     id, school_id, first_name, last_name, matricule,
-                    date_of_birth, class_id, parent_name,
+                    date_of_birth, gender, phone, class_id, parent_name,
                     parent_phone, address, photo_url, created_at
                 `,
                 [
@@ -557,6 +564,8 @@ app.post(
                     last_name.trim(),
                     finalMatricule,
                     date_of_birth || null,
+                    gender || null,
+                    phone || null,
                     class_id,
                     parent_name || null,
                     parent_phone || null,
@@ -621,6 +630,8 @@ app.put(
                 last_name,
                 matricule,
                 date_of_birth,
+                gender,
+                phone,
                 class_id,
                 parent_name,
                 parent_phone,
@@ -648,16 +659,18 @@ app.put(
                     last_name = $2,
                     matricule = $3,
                     date_of_birth = $4,
-                    class_id = $5,
-                    parent_name = $6,
-                    parent_phone = $7,
-                    address = $8,
-                    photo_url = $9
-                WHERE id = $10
-                AND school_id = $11
+                    gender = $5,
+                    phone = $6,
+                    class_id = $7,
+                    parent_name = $8,
+                    parent_phone = $9,
+                    address = $10,
+                    photo_url = $11
+                WHERE id = $12
+                AND school_id = $13
                 RETURNING
                     id, school_id, first_name, last_name, matricule,
-                    date_of_birth, class_id, parent_name,
+                    date_of_birth, gender, phone, class_id, parent_name,
                     parent_phone, address, photo_url, created_at
                 `,
                 [
@@ -665,6 +678,8 @@ app.put(
                     last_name.trim(),
                     matricule || null,
                     date_of_birth || null,
+                    gender || null,
+                    phone || null,
                     class_id,
                     parent_name || null,
                     parent_phone || null,
