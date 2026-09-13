@@ -276,6 +276,7 @@ app.get("/api/students", authenticateToken, async (req, res) => {
          s.gender,
          s.phone,
          s.address,
+         s.class_id,
          c.name AS class_name
        FROM students s
        LEFT JOIN classes c ON c.id = s.class_id
@@ -397,6 +398,328 @@ app.get("/api/subjects", authenticateToken, async (req, res) => {
       success: false,
       message: "Erreur lors du chargement des matières."
     });
+  }
+});
+
+// ================================
+// GRADES / NOTES
+// ================================
+
+// Charger les notes
+app.get("/api/grades", authenticateToken, async (req, res) => {
+  try {
+    const {
+      class_id,
+      subject_id,
+      period
+    } = req.query;
+
+    if (!class_id || !subject_id || !period) {
+      return res.status(400).json({
+        success: false,
+        message: "Classe, matière et période obligatoires."
+      });
+    }
+
+    // Vérifier que la classe appartient à l'école
+    const classCheck = await pool.query(
+      `SELECT id
+       FROM classes
+       WHERE id = $1
+       AND school_id = $2
+       LIMIT 1`,
+      [
+        class_id,
+        req.user.school_id
+      ]
+    );
+
+    if (classCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Classe introuvable."
+      });
+    }
+
+    // Vérifier que la matière appartient à l'école
+    const subjectCheck = await pool.query(
+      `SELECT id
+       FROM subjects
+       WHERE id = $1
+       AND school_id = $2
+       LIMIT 1`,
+      [
+        subject_id,
+        req.user.school_id
+      ]
+    );
+
+    if (subjectCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Matière introuvable."
+      });
+    }
+
+    const result = await pool.query(
+      `SELECT
+         student_id,
+         grade,
+         max_grade
+       FROM grades
+       WHERE school_id = $1
+       AND class_id = $2
+       AND subject_id = $3
+       AND period = $4
+       ORDER BY created_at`,
+      [
+        req.user.school_id,
+        class_id,
+        subject_id,
+        period
+      ]
+    );
+
+    res.json({
+      success: true,
+      grades: result.rows
+    });
+
+  } catch (error) {
+    console.error("GET GRADES ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors du chargement des notes."
+    });
+  }
+});
+
+
+// ================================
+// ENREGISTRER LES NOTES
+// ================================
+
+app.post("/api/grades", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const {
+      class_id,
+      subject_id,
+      period,
+      max_grade,
+      grades
+    } = req.body;
+
+    // ================================
+    // VALIDATION
+    // ================================
+
+    if (
+      !class_id ||
+      !subject_id ||
+      !period ||
+      !Array.isArray(grades)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Données des notes incomplètes."
+      });
+    }
+
+    const maxGrade = Number(max_grade);
+
+    if (
+      !Number.isFinite(maxGrade) ||
+      maxGrade <= 0 ||
+      maxGrade > 400
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "La note maximale doit être comprise entre 1 et 400."
+      });
+    }
+
+    // ================================
+    // VÉRIFIER LA CLASSE
+    // ================================
+
+    const classCheck = await pool.query(
+      `SELECT id
+       FROM classes
+       WHERE id = $1
+       AND school_id = $2
+       LIMIT 1`,
+      [
+        class_id,
+        req.user.school_id
+      ]
+    );
+
+    if (classCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Classe introuvable."
+      });
+    }
+
+    // ================================
+    // VÉRIFIER LA MATIÈRE
+    // ================================
+
+    const subjectCheck = await pool.query(
+      `SELECT id
+       FROM subjects
+       WHERE id = $1
+       AND school_id = $2
+       LIMIT 1`,
+      [
+        subject_id,
+        req.user.school_id
+      ]
+    );
+
+    if (subjectCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Matière introuvable."
+      });
+    }
+
+    // ================================
+    // TRANSACTION
+    // ================================
+
+    await client.query("BEGIN");
+
+    for (const item of grades) {
+
+      if (!item.student_id) {
+        continue;
+      }
+
+      // Vérifier que l'élève appartient
+      // à cette école et à cette classe
+      const studentCheck = await client.query(
+        `SELECT id
+         FROM students
+         WHERE id = $1
+         AND school_id = $2
+         AND class_id = $3
+         LIMIT 1`,
+        [
+          item.student_id,
+          req.user.school_id,
+          class_id
+        ]
+      );
+
+      if (studentCheck.rows.length === 0) {
+        throw new Error(
+          "Un élève ne correspond pas à cette classe."
+        );
+      }
+
+      // Une case vide supprime l'ancienne note
+      if (
+        item.grade === "" ||
+        item.grade === null ||
+        item.grade === undefined
+      ) {
+        await client.query(
+          `DELETE FROM grades
+           WHERE school_id = $1
+           AND student_id = $2
+           AND subject_id = $3
+           AND class_id = $4
+           AND period = $5`,
+          [
+            req.user.school_id,
+            item.student_id,
+            subject_id,
+            class_id,
+            period
+          ]
+        );
+
+        continue;
+      }
+
+      const grade = Number(item.grade);
+
+      if (
+        !Number.isFinite(grade) ||
+        grade < 0 ||
+        grade > maxGrade
+      ) {
+        throw new Error(
+          `Note invalide pour l'élève ${item.student_id}.`
+        );
+      }
+
+      // ================================
+      // INSERTION OU MISE À JOUR
+      // ================================
+
+      await client.query(
+        `INSERT INTO grades (
+           school_id,
+           student_id,
+           subject_id,
+           class_id,
+           period,
+           grade,
+           max_grade,
+           updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+
+         ON CONFLICT (
+           school_id,
+           student_id,
+           subject_id,
+           class_id,
+           period
+         )
+
+         DO UPDATE SET
+           grade = EXCLUDED.grade,
+           max_grade = EXCLUDED.max_grade,
+           updated_at = NOW()`,
+        [
+          req.user.school_id,
+          item.student_id,
+          subject_id,
+          class_id,
+          period,
+          grade,
+          maxGrade
+        ]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    res.json({
+      success: true,
+      message: "Les notes ont été enregistrées avec succès."
+    });
+
+  } catch (error) {
+
+    await client.query("ROLLBACK");
+
+    console.error("SAVE GRADES ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message ||
+        "Erreur lors de l'enregistrement des notes."
+    });
+
+  } finally {
+    client.release();
   }
 });
 
