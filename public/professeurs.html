@@ -1,1 +1,1047 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Gestion École — Professeurs</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            color: #172033;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: #111827;
+            color: white;
+            padding: 25px 15px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0 15px 30px;
+            border-bottom: 1px solid #293244;
+            margin-bottom: 20px;
+        }
+
+        .logo span {
+            color: #3b82f6;
+        }
+
+        .menu {
+            list-style: none;
+        }
+
+        .menu li {
+            margin-bottom: 6px;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 13px 15px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+            margin-left: 250px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 35px;
+        }
+
+        .topbar h1 {
+            font-size: 22px;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 35px;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            margin-bottom: 7px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        /* =========================
+           STATISTICS
+        ========================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+        }
+
+        .stat-card p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+        }
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .table-container {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .table-header h3 {
+            font-size: 18px;
+        }
+
+        .search {
+            width: 300px;
+            padding: 11px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            outline: none;
+        }
+
+        .search:focus {
+            border-color: #2563eb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #edf0f3;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #6b7280;
+        }
+
+        /* =========================
+           ERROR
+        ========================= */
+
+        .error-message {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 1000px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 750px) {
+
+            .sidebar {
+                width: 210px;
+            }
+
+            .main {
+                margin-left: 210px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search {
+                width: 100%;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 850px;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================
+         SIDEBAR
+    ========================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            Gestion <span>École</span>
+        </div>
+
+        <ul class="menu">
+
+            <li>
+                <a href="/admin.html">
+                    Tableau de bord
+                </a>
+            </li>
+
+            <li>
+                <a href="/eleves.html">
+                    Élèves
+                </a>
+            </li>
+
+            <li>
+                <a href="/professeurs.html" class="active">
+                    Professeurs
+                </a>
+            </li>
+
+            <li>
+                <a href="/classes.html">
+                    Classes
+                </a>
+            </li>
+
+            <li>
+                <a href="/matieres.html">
+                    Matières
+                </a>
+            </li>
+
+            <li>
+                <a href="/presence.html">
+                    Présences
+                </a>
+            </li>
+
+            <li>
+                <a href="/notes.html">
+                    Notes
+                </a>
+            </li>
+
+            <li>
+                <a href="/emploi-du-temps.html">
+                    Emploi du temps
+                </a>
+            </li>
+
+            <li>
+                <a href="/paiements.html">
+                    Paiements
+                </a>
+            </li>
+
+            <li>
+                <a href="/bulletins.html">
+                    Bulletins
+                </a>
+            </li>
+
+        </ul>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN
+    ========================= -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <h1>Gestion des professeurs</h1>
+
+            <div class="user">
+
+                <strong id="userName">
+                    Administrateur
+                </strong>
+
+                <div
+                    class="user-avatar"
+                    id="userAvatar"
+                >
+                    A
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="content">
+
+            <!-- HEADER -->
+
+            <div class="page-header">
+
+                <div>
+
+                    <h2>Professeurs</h2>
+
+                    <p>
+                        Consultez et gérez le personnel enseignant
+                        de votre établissement.
+                    </p>
+
+                </div>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="showComingSoon()"
+                >
+                    + Ajouter un professeur
+                </button>
+
+            </div>
+
+
+            <!-- ERROR -->
+
+            <div
+                class="error-message"
+                id="errorMessage"
+            ></div>
+
+
+            <!-- STATISTICS -->
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <p>Total des professeurs</p>
+
+                    <h3 id="totalTeachers">
+                        0
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>Avec email</p>
+
+                    <h3 id="teachersWithEmail">
+                        0
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>Avec téléphone</p>
+
+                    <h3 id="teachersWithPhone">
+                        0
+                    </h3>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <p>Spécialisations</p>
+
+                    <h3 id="specializations">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <!-- TABLE -->
+
+            <div class="table-container">
+
+                <div class="table-header">
+
+                    <h3>
+                        Liste des professeurs
+                    </h3>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search"
+                        placeholder="Rechercher un professeur..."
+                    >
+
+                </div>
+
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Numéro
+                            </th>
+
+                            <th>
+                                Nom
+                            </th>
+
+                            <th>
+                                Prénom
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                Téléphone
+                            </th>
+
+                            <th>
+                                Spécialisation
+                            </th>
+
+                            <th>
+                                Statut
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="teachersTable">
+
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="empty"
+                            >
+                                Chargement des professeurs...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+        // =========================
+        // AUTHENTIFICATION
+        // =========================
+
+        const token =
+            localStorage.getItem("school_token");
+
+        if (!token) {
+
+            window.location.href = "/";
+
+        }
+
+
+        // =========================
+        // UTILISATEUR
+        // =========================
+
+        try {
+
+            const user =
+                JSON.parse(
+                    localStorage.getItem("school_user") || "{}"
+                );
+
+            const fullName =
+                `${user.first_name || ""} ${user.last_name || ""}`
+                .trim();
+
+            if (fullName) {
+
+                document.getElementById(
+                    "userName"
+                ).textContent = fullName;
+
+                document.getElementById(
+                    "userAvatar"
+                ).textContent =
+                    (user.first_name || "A")
+                    .charAt(0)
+                    .toUpperCase();
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Erreur utilisateur :",
+                error
+            );
+
+        }
+
+
+        // =========================
+        // DONNÉES
+        // =========================
+
+        let teachers = [];
+
+
+        // =========================
+        // CHARGER LES PROFESSEURS
+        // =========================
+
+        async function loadTeachers() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/teachers",
+                        {
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${token}`
+                            }
+                        }
+                    );
+
+
+                if (
+                    response.status === 401 ||
+                    response.status === 403
+                ) {
+
+                    localStorage.removeItem(
+                        "school_token"
+                    );
+
+                    localStorage.removeItem(
+                        "school_user"
+                    );
+
+                    window.location.href = "/";
+
+                    return;
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Impossible de charger les professeurs."
+                    );
+
+                }
+
+
+                teachers =
+                    data.teachers || [];
+
+
+                displayTeachers(teachers);
+
+                updateStatistics(teachers);
+
+
+            } catch (error) {
+
+                console.error(
+                    "Erreur professeurs :",
+                    error
+                );
+
+
+                const errorBox =
+                    document.getElementById(
+                        "errorMessage"
+                    );
+
+                errorBox.textContent =
+                    error.message ||
+                    "Impossible de charger les professeurs.";
+
+                errorBox.style.display =
+                    "block";
+
+
+                document.getElementById(
+                    "teachersTable"
+                ).innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty">
+                            Impossible de charger les professeurs.
+                        </td>
+                    </tr>
+                `;
+
+            }
+
+        }
+
+
+        // =========================
+        // AFFICHER LES PROFESSEURS
+        // =========================
+
+        function displayTeachers(list) {
+
+            const table =
+                document.getElementById(
+                    "teachersTable"
+                );
+
+
+            if (!list.length) {
+
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty">
+                            Aucun professeur enregistré.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            table.innerHTML =
+                list.map(teacher => {
+
+                    return `
+                        <tr>
+
+                            <td>
+                                ${escapeHtml(
+                                    teacher.teacher_number || "—"
+                                )}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    ${escapeHtml(
+                                        teacher.last_name || "—"
+                                    )}
+                                </strong>
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    teacher.first_name || "—"
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    teacher.email || "—"
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    teacher.phone || "—"
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    teacher.specialization || "—"
+                                )}
+                            </td>
+
+                            <td>
+                                <span class="badge">
+                                    Actif
+                                </span>
+                            </td>
+
+                        </tr>
+                    `;
+
+                }).join("");
+
+        }
+
+
+        // =========================
+        // STATISTIQUES
+        // =========================
+
+        function updateStatistics(list) {
+
+            document.getElementById(
+                "totalTeachers"
+            ).textContent =
+                list.length;
+
+
+            const withEmail =
+                list.filter(
+                    teacher =>
+                        teacher.email &&
+                        String(teacher.email).trim() !== ""
+                ).length;
+
+
+            const withPhone =
+                list.filter(
+                    teacher =>
+                        teacher.phone &&
+                        String(teacher.phone).trim() !== ""
+                ).length;
+
+
+            const specializationSet =
+                new Set(
+                    list
+                        .map(
+                            teacher =>
+                                teacher.specialization
+                        )
+                        .filter(
+                            value =>
+                                value &&
+                                String(value).trim() !== ""
+                        )
+                );
+
+
+            document.getElementById(
+                "teachersWithEmail"
+            ).textContent =
+                withEmail;
+
+
+            document.getElementById(
+                "teachersWithPhone"
+            ).textContent =
+                withPhone;
+
+
+            document.getElementById(
+                "specializations"
+            ).textContent =
+                specializationSet.size;
+
+        }
+
+
+        // =========================
+        // RECHERCHE
+        // =========================
+
+        document
+            .getElementById("searchInput")
+            .addEventListener(
+                "input",
+                function () {
+
+                    const search =
+                        this.value
+                            .toLowerCase()
+                            .trim();
+
+
+                    const filtered =
+                        teachers.filter(
+                            teacher => {
+
+                                return [
+
+                                    teacher.teacher_number,
+
+                                    teacher.first_name,
+
+                                    teacher.last_name,
+
+                                    teacher.email,
+
+                                    teacher.phone,
+
+                                    teacher.specialization
+
+                                ]
+                                .filter(Boolean)
+                                .some(
+                                    value =>
+                                        String(value)
+                                            .toLowerCase()
+                                            .includes(search)
+                                );
+
+                            }
+                        );
+
+
+                    displayTeachers(
+                        filtered
+                    );
+
+                }
+            );
+
+
+        // =========================
+        // BOUTON AJOUT
+        // =========================
+
+        function showComingSoon() {
+
+            alert(
+                "Le formulaire d'ajout des professeurs sera activé lors de la prochaine étape."
+            );
+
+        }
+
+
+        // =========================
+        // PROTECTION HTML
+        // =========================
+
+        function escapeHtml(value) {
+
+            return String(value)
+
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        // =========================
+        // INITIALISATION
+        // =========================
+
+        loadTeachers();
+
+    </script>
+
+</body>
+</html>
