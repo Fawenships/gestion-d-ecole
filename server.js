@@ -23,11 +23,10 @@ if (!JWT_SECRET) {
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-
     ssl:
         process.env.NODE_ENV === "production"
             ? { rejectUnauthorized: false }
-            : false
+            : false,
 });
 
 /* =========================================================
@@ -37,70 +36,42 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* =========================================================
-   FICHIERS PUBLICS
-========================================================= */
-
-app.use(
-    express.static(
-        path.join(__dirname, "public")
-    )
-);
+app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================================================
-   PAGE D'ACCUEIL
+   PAGES
 ========================================================= */
 
 app.get("/", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "index.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* =========================================================
-   PAGES DE L'APPLICATION
-========================================================= */
-
 app.get("/admin.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "admin.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
 app.get("/eleves.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "eleves.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "eleves.html"));
 });
 
 app.get("/professeurs.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "professeurs.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "professeurs.html"));
 });
 
 app.get("/classes.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "classes.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "classes.html"));
 });
 
 app.get("/matieres.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "matieres.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "matieres.html"));
 });
 
 app.get("/presence.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "presence.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "presence.html"));
 });
 
 app.get("/notes.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "notes.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "notes.html"));
 });
 
 app.get("/emploi-du-temps.html", (req, res) => {
@@ -110,15 +81,11 @@ app.get("/emploi-du-temps.html", (req, res) => {
 });
 
 app.get("/paiements.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "paiements.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "paiements.html"));
 });
 
 app.get("/bulletins.html", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "public", "bulletins.html")
-    );
+    res.sendFile(path.join(__dirname, "public", "bulletins.html"));
 });
 
 /* =========================================================
@@ -126,44 +93,35 @@ app.get("/bulletins.html", (req, res) => {
 ========================================================= */
 
 function authenticateToken(req, res, next) {
+    const authHeader = req.headers.authorization;
 
-    const authHeader =
-        req.headers["authorization"];
-
-    const token =
-        authHeader &&
-        authHeader.startsWith("Bearer ")
-            ? authHeader.split(" ")[1]
-            : null;
-
-    if (!token) {
-
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({
             success: false,
-            message: "Token manquant."
+            message: "Token d'authentification manquant.",
         });
-
     }
 
-    jwt.verify(
-        token,
-        JWT_SECRET,
-        (err, user) => {
+    const token = authHeader.split(" ")[1];
 
-            if (err) {
+    try {
+        const user = jwt.verify(token, JWT_SECRET);
 
-                return res.status(403).json({
-                    success: false,
-                    message: "Token invalide ou expiré."
-                });
-
-            }
-
-            req.user = user;
-
-            next();
+        if (!user || !user.id || !user.school_id) {
+            return res.status(401).json({
+                success: false,
+                message: "Token invalide.",
+            });
         }
-    );
+
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({
+            success: false,
+            message: "Session expirée ou token invalide.",
+        });
+    }
 }
 
 /* =========================================================
@@ -171,21 +129,14 @@ function authenticateToken(req, res, next) {
 ========================================================= */
 
 app.post("/api/login", async (req, res) => {
-
     try {
-
-        const {
-            email,
-            password
-        } = req.body;
+        const { email, password } = req.body;
 
         if (!email || !password) {
-
             return res.status(400).json({
                 success: false,
-                message: "Email et mot de passe requis."
+                message: "Email et mot de passe obligatoires.",
             });
-
         }
 
         const result = await pool.query(
@@ -196,8 +147,9 @@ app.post("/api/login", async (req, res) => {
                 first_name,
                 last_name,
                 email,
-                password_hash,
-                role
+                password,
+                role,
+                active
             FROM users
             WHERE LOWER(email) = LOWER($1)
             LIMIT 1
@@ -206,755 +158,481 @@ app.post("/api/login", async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-
             return res.status(401).json({
                 success: false,
-                message: "Email ou mot de passe incorrect."
+                message: "Email ou mot de passe incorrect.",
             });
-
         }
 
         const user = result.rows[0];
 
-        const passwordValid =
-            await bcrypt.compare(
-                password,
-                user.password_hash
-            );
-
-        if (!passwordValid) {
-
-            return res.status(401).json({
+        if (user.active === false) {
+            return res.status(403).json({
                 success: false,
-                message: "Email ou mot de passe incorrect."
+                message: "Ce compte est désactivé.",
             });
-
         }
 
-        const token =
-            jwt.sign(
-                {
-                    id: user.id,
-                    school_id: user.school_id,
-                    email: user.email,
-                    role: user.role
-                },
-                JWT_SECRET,
-                {
-                    expiresIn: "24h"
-                }
-            );
-
-        delete user.password_hash;
-
-        res.json({
-            success: true,
-            token,
-            user
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Erreur login :",
-            error
+        const passwordOK = await bcrypt.compare(
+            password,
+            user.password
         );
 
-        res.status(500).json({
-            success: false,
-            message: "Erreur serveur."
+        if (!passwordOK) {
+            return res.status(401).json({
+                success: false,
+                message: "Email ou mot de passe incorrect.",
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                id: user.id,
+                school_id: user.school_id,
+                role: user.role,
+                email: user.email,
+            },
+            JWT_SECRET,
+            {
+                expiresIn: "7d",
+            }
+        );
+
+        delete user.password;
+
+        return res.json({
+            success: true,
+            message: "Connexion réussie.",
+            token,
+            user,
         });
+    } catch (error) {
+        console.error("Erreur login :", error);
 
+        return res.status(500).json({
+            success: false,
+            message: "Erreur serveur lors de la connexion.",
+        });
     }
-
 });
 
 /* =========================================================
    UTILISATEUR CONNECTÉ
 ========================================================= */
 
-app.get(
-    "/api/me",
-    authenticateToken,
-    async (req, res) => {
+app.get("/api/me", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            SELECT
+                id,
+                school_id,
+                first_name,
+                last_name,
+                email,
+                role,
+                active
+            FROM users
+            WHERE id = $1
+              AND school_id = $2
+            LIMIT 1
+            `,
+            [req.user.id, req.user.school_id]
+        );
 
-        try {
-
-            const result =
-                await pool.query(
-                    `
-                    SELECT
-                        id,
-                        school_id,
-                        first_name,
-                        last_name,
-                        email,
-                        role
-                    FROM users
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        req.user.id,
-                        req.user.school_id
-                    ]
-                );
-
-            if (result.rows.length === 0) {
-
-                return res.status(404).json({
-                    success: false,
-                    message: "Utilisateur introuvable."
-                });
-
-            }
-
-            res.json({
-                success: true,
-                user: result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur /api/me :",
-                error
-            );
-
-            res.status(500).json({
+        if (result.rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message: "Erreur serveur."
+                message: "Utilisateur introuvable.",
             });
-
         }
 
+        res.json({
+            success: true,
+            user: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur /api/me :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur serveur.",
+        });
     }
-);
+});
 
 /* =========================================================
    DASHBOARD
 ========================================================= */
 
-app.get(
-    "/api/dashboard",
-    authenticateToken,
-    async (req, res) => {
+app.get("/api/dashboard", authenticateToken, async (req, res) => {
+    try {
+        const schoolId = req.user.school_id;
 
-        try {
+        const [
+            students,
+            teachers,
+            classes,
+            subjects,
+        ] = await Promise.all([
+            pool.query(
+                `SELECT COUNT(*)::int AS total
+                 FROM students
+                 WHERE school_id = $1`,
+                [schoolId]
+            ),
 
-            const schoolId =
-                req.user.school_id;
+            pool.query(
+                `SELECT COUNT(*)::int AS total
+                 FROM teachers
+                 WHERE school_id = $1`,
+                [schoolId]
+            ),
 
-            const result =
-                await pool.query(
-                    `
-                    SELECT
+            pool.query(
+                `SELECT COUNT(*)::int AS total
+                 FROM classes
+                 WHERE school_id = $1`,
+                [schoolId]
+            ),
 
-                        (
-                            SELECT COUNT(*)
-                            FROM students
-                            WHERE school_id = $1
-                        ) AS students,
+            pool.query(
+                `SELECT COUNT(*)::int AS total
+                 FROM subjects
+                 WHERE school_id = $1`,
+                [schoolId]
+            ),
+        ]);
 
-                        (
-                            SELECT COUNT(*)
-                            FROM teachers
-                            WHERE school_id = $1
-                        ) AS teachers,
+        res.json({
+            success: true,
+            data: {
+                students: students.rows[0].total,
+                teachers: teachers.rows[0].total,
+                classes: classes.rows[0].total,
+                subjects: subjects.rows[0].total,
+            },
+        });
+    } catch (error) {
+        console.error("Erreur dashboard :", error);
 
-                        (
-                            SELECT COUNT(*)
-                            FROM classes
-                            WHERE school_id = $1
-                        ) AS classes,
-
-                        (
-                            SELECT COUNT(*)
-                            FROM subjects
-                            WHERE school_id = $1
-                        ) AS subjects,
-
-                        (
-                            SELECT COUNT(*)
-                            FROM teacher_attendance
-                            WHERE school_id = $1
-                            AND attendance_date = CURRENT_DATE
-                            AND status = 'present'
-                        ) AS "presentTeachers",
-
-                        (
-                            SELECT COUNT(*)
-                            FROM teacher_attendance
-                            WHERE school_id = $1
-                            AND attendance_date = CURRENT_DATE
-                            AND status = 'late'
-                        ) AS "lateTeachers"
-                    `,
-                    [schoolId]
-                );
-
-            res.json({
-                success: true,
-                dashboard: result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur dashboard :",
-                error
-            );
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Impossible de charger le tableau de bord."
-            });
-
-        }
-
+        res.status(500).json({
+            success: false,
+            message: "Impossible de charger le tableau de bord.",
+        });
     }
-);
+});
 
 /* =========================================================
-   ÉLÈVES — LECTURE
+   ÉLÈVES
 ========================================================= */
 
-app.get(
-    "/api/students",
-    authenticateToken,
-    async (req, res) => {
+/* GET ÉLÈVES */
 
-        try {
+app.get("/api/students", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            SELECT
+                s.*,
+                c.name AS class_name
+            FROM students s
+            LEFT JOIN classes c
+                ON c.id = s.class_id
+               AND c.school_id = s.school_id
+            WHERE s.school_id = $1
+            ORDER BY s.last_name ASC, s.first_name ASC
+            `,
+            [req.user.school_id]
+        );
 
-            const result =
-                await pool.query(
-                    `
-                    SELECT
-                        s.id,
-                        s.school_id,
-                        s.first_name,
-                        s.last_name,
-                        s.matricule,
-                        s.date_of_birth,
-                        s.gender,
-                        s.phone,
-                        s.class_id,
-                        c.name AS class_name,
-                        s.parent_name,
-                        s.parent_phone,
-                        s.address,
-                        s.photo_url,
-                        s.active,
-                        s.created_at
-                    FROM students s
-                    LEFT JOIN classes c
-                        ON c.id = s.class_id
-                    WHERE s.school_id = $1
-                    ORDER BY
-                        s.last_name ASC,
-                        s.first_name ASC
-                    `,
-                    [req.user.school_id]
-                );
+        res.json({
+            success: true,
+            students: result.rows,
+        });
+    } catch (error) {
+        console.error("Erreur GET students :", error);
 
-            res.json({
-                success: true,
-                students: result.rows
-            });
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors du chargement des élèves.",
+        });
+    }
+});
 
-        } catch (error) {
+/* POST ÉLÈVE */
 
-            console.error(
-                "Erreur students :",
-                error
-            );
+app.post("/api/students", authenticateToken, async (req, res) => {
+    try {
+        const {
+            first_name,
+            last_name,
+            email,
+            phone,
+            address,
+            birth_date,
+            gender,
+            class_id,
+        } = req.body;
 
-            res.status(500).json({
+        if (!first_name || !last_name) {
+            return res.status(400).json({
                 success: false,
-                message:
-                    "Impossible de charger les élèves."
+                message: "Le prénom et le nom sont obligatoires.",
             });
-
         }
 
-    }
-);
-
-/* =========================================================
-   ÉLÈVES — AJOUT
-========================================================= */
-
-app.post(
-    "/api/students",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const {
-                first_name,
-                last_name,
-                matricule,
-                date_of_birth,
-                gender,
-                phone,
-                class_id,
-                parent_name,
-                parent_phone,
-                address,
-                photo_url
-            } = req.body;
-
-            if (
-                !first_name ||
-                !first_name.trim() ||
-                !last_name ||
-                !last_name.trim()
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Le prénom et le nom sont requis."
-                });
-
-            }
-
-            if (!class_id) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "La classe est requise."
-                });
-
-            }
-
-            const schoolId =
-                req.user.school_id;
-
-            const classCheck =
-                await pool.query(
-                    `
-                    SELECT id
-                    FROM classes
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        class_id,
-                        schoolId
-                    ]
-                );
+        if (class_id) {
+            const classCheck = await pool.query(
+                `
+                SELECT id
+                FROM classes
+                WHERE id = $1
+                  AND school_id = $2
+                `,
+                [class_id, req.user.school_id]
+            );
 
             if (classCheck.rows.length === 0) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Classe introuvable."
-                });
-
-            }
-
-            const finalMatricule =
-                matricule &&
-                matricule.trim()
-                    ? matricule.trim()
-                    : "EL" +
-                      Date.now()
-                          .toString()
-                          .slice(-8);
-
-            const result =
-                await pool.query(
-                    `
-                    INSERT INTO students (
-                        school_id,
-                        first_name,
-                        last_name,
-                        matricule,
-                        date_of_birth,
-                        gender,
-                        phone,
-                        class_id,
-                        parent_name,
-                        parent_phone,
-                        address,
-                        photo_url
-                    )
-                    VALUES (
-                        $1,$2,$3,$4,$5,$6,
-                        $7,$8,$9,$10,$11,$12
-                    )
-                    RETURNING
-                        id,
-                        school_id,
-                        first_name,
-                        last_name,
-                        matricule,
-                        date_of_birth,
-                        gender,
-                        phone,
-                        class_id,
-                        parent_name,
-                        parent_phone,
-                        address,
-                        photo_url,
-                        created_at
-                    `,
-                    [
-                        schoolId,
-                        first_name.trim(),
-                        last_name.trim(),
-                        finalMatricule,
-                        date_of_birth || null,
-                        gender || null,
-                        phone || null,
-                        class_id,
-                        parent_name || null,
-                        parent_phone || null,
-                        address || null,
-                        photo_url || null
-                    ]
-                );
-
-            res.status(201).json({
-                success: true,
-                message:
-                    "Élève ajouté avec succès.",
-                student:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur ajout élève :",
-                error
-            );
-
-            if (error.code === "23505") {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Ce matricule existe déjà."
-                });
-
-            }
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Impossible d'ajouter l'élève."
-            });
-
-        }
-
-    }
-);
-
-/* =========================================================
-   ÉLÈVES — MODIFICATION
-========================================================= */
-
-app.put(
-    "/api/students/:id",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const studentId =
-                Number(req.params.id);
-
-            if (!Number.isInteger(studentId)) {
-
                 return res.status(400).json({
                     success: false,
-                    message:
-                        "Identifiant d'élève invalide."
+                    message: "Classe invalide.",
                 });
-
             }
+        }
 
-            const {
+        const result = await pool.query(
+            `
+            INSERT INTO students (
+                school_id,
                 first_name,
                 last_name,
-                matricule,
-                date_of_birth,
-                gender,
+                email,
                 phone,
-                class_id,
-                parent_name,
-                parent_phone,
                 address,
-                photo_url
-            } = req.body;
+                birth_date,
+                gender,
+                class_id
+            )
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+            RETURNING *
+            `,
+            [
+                req.user.school_id,
+                first_name,
+                last_name,
+                email || null,
+                phone || null,
+                address || null,
+                birth_date || null,
+                gender || null,
+                class_id || null,
+            ]
+        );
 
-            if (
-                !first_name ||
-                !first_name.trim() ||
-                !last_name ||
-                !last_name.trim()
-            ) {
+        res.status(201).json({
+            success: true,
+            message: "Élève ajouté avec succès.",
+            student: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur POST student :", error);
 
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de l'ajout de l'élève.",
+        });
+    }
+});
+
+/* PUT ÉLÈVE */
+
+app.put("/api/students/:id", authenticateToken, async (req, res) => {
+    try {
+        const studentId = req.params.id;
+
+        const {
+            first_name,
+            last_name,
+            email,
+            phone,
+            address,
+            birth_date,
+            gender,
+            class_id,
+        } = req.body;
+
+        if (!first_name || !last_name) {
+            return res.status(400).json({
+                success: false,
+                message: "Le prénom et le nom sont obligatoires.",
+            });
+        }
+
+        if (class_id) {
+            const classCheck = await pool.query(
+                `
+                SELECT id
+                FROM classes
+                WHERE id = $1
+                  AND school_id = $2
+                `,
+                [class_id, req.user.school_id]
+            );
+
+            if (classCheck.rows.length === 0) {
                 return res.status(400).json({
                     success: false,
-                    message:
-                        "Le prénom et le nom sont requis."
+                    message: "Classe invalide.",
                 });
-
             }
-
-            const result =
-                await pool.query(
-                    `
-                    UPDATE students
-                    SET
-                        first_name = $1,
-                        last_name = $2,
-                        matricule = $3,
-                        date_of_birth = $4,
-                        gender = $5,
-                        phone = $6,
-                        class_id = $7,
-                        parent_name = $8,
-                        parent_phone = $9,
-                        address = $10,
-                        photo_url = $11
-                    WHERE id = $12
-                    AND school_id = $13
-                    RETURNING
-                        id,
-                        school_id,
-                        first_name,
-                        last_name,
-                        matricule,
-                        date_of_birth,
-                        gender,
-                        phone,
-                        class_id,
-                        parent_name,
-                        parent_phone,
-                        address,
-                        photo_url,
-                        created_at
-                    `,
-                    [
-                        first_name.trim(),
-                        last_name.trim(),
-                        matricule || null,
-                        date_of_birth || null,
-                        gender || null,
-                        phone || null,
-                        class_id,
-                        parent_name || null,
-                        parent_phone || null,
-                        address || null,
-                        photo_url || null,
-                        studentId,
-                        req.user.school_id
-                    ]
-                );
-
-            if (result.rows.length === 0) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Élève introuvable."
-                });
-
-            }
-
-            res.json({
-                success: true,
-                message:
-                    "Élève modifié avec succès.",
-                student:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur modification élève :",
-                error
-            );
-
-            if (error.code === "23505") {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Ce matricule existe déjà."
-                });
-
-            }
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Impossible de modifier l'élève."
-            });
-
         }
 
-    }
-);
+        const result = await pool.query(
+            `
+            UPDATE students
+            SET
+                first_name = $1,
+                last_name = $2,
+                email = $3,
+                phone = $4,
+                address = $5,
+                birth_date = $6,
+                gender = $7,
+                class_id = $8
+            WHERE id = $9
+              AND school_id = $10
+            RETURNING *
+            `,
+            [
+                first_name,
+                last_name,
+                email || null,
+                phone || null,
+                address || null,
+                birth_date || null,
+                gender || null,
+                class_id || null,
+                studentId,
+                req.user.school_id,
+            ]
+        );
 
-/* =========================================================
-   ÉLÈVES — SUPPRESSION
-========================================================= */
-
-app.delete(
-    "/api/students/:id",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const studentId =
-                Number(req.params.id);
-
-            if (!Number.isInteger(studentId)) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Identifiant d'élève invalide."
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    DELETE FROM students
-                    WHERE id = $1
-                    AND school_id = $2
-                    RETURNING
-                        id,
-                        first_name,
-                        last_name
-                    `,
-                    [
-                        studentId,
-                        req.user.school_id
-                    ]
-                );
-
-            if (result.rows.length === 0) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Élève introuvable."
-                });
-
-            }
-
-            res.json({
-                success: true,
-                message:
-                    "Élève supprimé avec succès.",
-                student:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur suppression élève :",
-                error
-            );
-
-            if (error.code === "23503") {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Impossible de supprimer : cet élève a des données liées (notes, présences, paiements)."
-                });
-
-            }
-
-            res.status(500).json({
+        if (result.rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message:
-                    "Impossible de supprimer l'élève."
+                message: "Élève introuvable.",
             });
-
         }
 
+        res.json({
+            success: true,
+            message: "Élève modifié avec succès.",
+            student: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur PUT student :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la modification.",
+        });
     }
-);
+});
 
-/* =========================================================
-   PROFESSEURS — LECTURE
-========================================================= */
+/* DELETE ÉLÈVE */
 
-app.get(
-    "/api/teachers",
-    authenticateToken,
-    async (req, res) => {
+app.delete("/api/students/:id", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            DELETE FROM students
+            WHERE id = $1
+              AND school_id = $2
+            RETURNING id, first_name, last_name
+            `,
+            [req.params.id, req.user.school_id]
+        );
 
-        try {
-
-            const result =
-                await pool.query(
-                    `
-                    SELECT *
-                    FROM teachers
-                    WHERE school_id = $1
-                    ORDER BY
-                        last_name ASC,
-                        first_name ASC
-                    `,
-                    [req.user.school_id]
-                );
-
-            res.json({
-                success: true,
-                teachers:
-                    result.rows
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur teachers :",
-                error
-            );
-
-            res.status(500).json({
+        if (result.rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message:
-                    "Impossible de charger les professeurs."
+                message: "Élève introuvable.",
             });
-
         }
 
+        res.json({
+            success: true,
+            message: "Élève supprimé avec succès.",
+            student: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur DELETE student :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Impossible de supprimer cet élève.",
+        });
     }
-);
+});
 
 /* =========================================================
-   PROFESSEURS — AJOUT
+   PROFESSEURS
 ========================================================= */
 
-app.post(
-    "/api/teachers",
-    authenticateToken,
-    async (req, res) => {
+/* GET PROFESSEURS */
 
-        try {
+app.get("/api/teachers", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            SELECT *
+            FROM teachers
+            WHERE school_id = $1
+            ORDER BY last_name ASC, first_name ASC
+            `,
+            [req.user.school_id]
+        );
 
-            const {
+        res.json({
+            success: true,
+            teachers: result.rows,
+        });
+    } catch (error) {
+        console.error("Erreur GET teachers :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors du chargement des professeurs.",
+        });
+    }
+});
+
+/* POST PROFESSEUR */
+
+app.post("/api/teachers", authenticateToken, async (req, res) => {
+    try {
+        const {
+            first_name,
+            last_name,
+            email,
+            phone,
+            address,
+            specialization,
+            hire_date,
+        } = req.body;
+
+        if (!first_name || !last_name) {
+            return res.status(400).json({
+                success: false,
+                message: "Le prénom et le nom sont obligatoires.",
+            });
+        }
+
+        const result = await pool.query(
+            `
+            INSERT INTO teachers (
+                school_id,
                 first_name,
                 last_name,
                 email,
@@ -962,962 +640,412 @@ app.post(
                 address,
                 specialization,
                 hire_date
-            } = req.body;
-
-            if (
-                !first_name ||
-                !first_name.trim() ||
-                !last_name ||
-                !last_name.trim()
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Le prénom et le nom sont requis."
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    INSERT INTO teachers (
-                        school_id,
-                        first_name,
-                        last_name,
-                        email,
-                        phone,
-                        address,
-                        specialization,
-                        hire_date
-                    )
-                    VALUES (
-                        $1,$2,$3,$4,
-                        $5,$6,$7,$8
-                    )
-                    RETURNING *
-                    `,
-                    [
-                        req.user.school_id,
-                        first_name.trim(),
-                        last_name.trim(),
-                        email &&
-                        email.trim()
-                            ? email.trim()
-                            : null,
-                        phone &&
-                        phone.trim()
-                            ? phone.trim()
-                            : null,
-                        address &&
-                        address.trim()
-                            ? address.trim()
-                            : null,
-                        specialization &&
-                        specialization.trim()
-                            ? specialization.trim()
-                            : null,
-                        hire_date || null
-                    ]
-                );
-
-            res.status(201).json({
-                success: true,
-                message:
-                    "Professeur ajouté avec succès.",
-                teacher:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur ajout professeur :",
-                error
-            );
-
-            if (error.code === "23505") {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Un professeur avec ces informations existe déjà."
-                });
-
-            }
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Impossible d'ajouter le professeur."
-            });
-
-        }
-
-    }
-);
-
-/* =========================================================
-   PROFESSEURS — MODIFICATION
-========================================================= */
-
-app.put(
-    "/api/teachers/:id",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const teacherId =
-                Number(req.params.id);
-
-            if (!Number.isInteger(teacherId)) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Identifiant de professeur invalide."
-                });
-
-            }
-
-            const {
+            )
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+            RETURNING *
+            `,
+            [
+                req.user.school_id,
                 first_name,
                 last_name,
-                email,
-                phone,
-                address,
-                specialization,
-                hire_date,
-                active
-            } = req.body;
+                email || null,
+                phone || null,
+                address || null,
+                specialization || null,
+                hire_date || null,
+            ]
+        );
 
-            if (
-                !first_name ||
-                !first_name.trim() ||
-                !last_name ||
-                !last_name.trim()
-            ) {
+        res.status(201).json({
+            success: true,
+            message: "Professeur ajouté avec succès.",
+            teacher: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur POST teacher :", error);
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Le prénom et le nom sont requis."
-                });
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de l'ajout du professeur.",
+        });
+    }
+});
 
-            }
+/* PUT PROFESSEUR */
 
-            const result =
-                await pool.query(
-                    `
-                    UPDATE teachers
-                    SET
-                        first_name = $1,
-                        last_name = $2,
-                        email = $3,
-                        phone = $4,
-                        address = $5,
-                        specialization = $6,
-                        hire_date = $7,
-                        active = COALESCE($8, active)
-                    WHERE id = $9
-                    AND school_id = $10
-                    RETURNING *
-                    `,
-                    [
-                        first_name.trim(),
-                        last_name.trim(),
+app.put("/api/teachers/:id", authenticateToken, async (req, res) => {
+    try {
+        const {
+            first_name,
+            last_name,
+            email,
+            phone,
+            address,
+            specialization,
+            hire_date,
+            active,
+        } = req.body;
 
-                        email &&
-                        email.trim()
-                            ? email.trim()
-                            : null,
-
-                        phone &&
-                        phone.trim()
-                            ? phone.trim()
-                            : null,
-
-                        address &&
-                        address.trim()
-                            ? address.trim()
-                            : null,
-
-                        specialization &&
-                        specialization.trim()
-                            ? specialization.trim()
-                            : null,
-
-                        hire_date || null,
-
-                        typeof active === "boolean"
-                            ? active
-                            : null,
-
-                        teacherId,
-
-                        req.user.school_id
-                    ]
-                );
-
-            if (result.rows.length === 0) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Professeur introuvable."
-                });
-
-            }
-
-            res.json({
-                success: true,
-                message:
-                    "Professeur modifié avec succès.",
-                teacher:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur modification professeur :",
-                error
-            );
-
-            if (error.code === "23505") {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Un professeur avec ces informations existe déjà."
-                });
-
-            }
-
-            res.status(500).json({
+        if (!first_name || !last_name) {
+            return res.status(400).json({
                 success: false,
-                message:
-                    "Impossible de modifier le professeur."
+                message: "Le prénom et le nom sont obligatoires.",
             });
-
         }
 
-    }
-);
+        const result = await pool.query(
+            `
+            UPDATE teachers
+            SET
+                first_name = $1,
+                last_name = $2,
+                email = $3,
+                phone = $4,
+                address = $5,
+                specialization = $6,
+                hire_date = $7,
+                active = COALESCE($8, active)
+            WHERE id = $9
+              AND school_id = $10
+            RETURNING *
+            `,
+            [
+                first_name,
+                last_name,
+                email || null,
+                phone || null,
+                address || null,
+                specialization || null,
+                hire_date || null,
+                typeof active === "boolean" ? active : null,
+                req.params.id,
+                req.user.school_id,
+            ]
+        );
 
-/* =========================================================
-   PROFESSEURS — SUPPRESSION
-========================================================= */
-
-app.delete(
-    "/api/teachers/:id",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const teacherId =
-                Number(req.params.id);
-
-            if (!Number.isInteger(teacherId)) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Identifiant de professeur invalide."
-                });
-
-            }
-
-            const schoolId =
-                req.user.school_id;
-
-            const teacherCheck =
-                await pool.query(
-                    `
-                    SELECT
-                        id,
-                        first_name,
-                        last_name
-                    FROM teachers
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        teacherId,
-                        schoolId
-                    ]
-                );
-
-            if (
-                teacherCheck.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Professeur introuvable."
-                });
-
-            }
-
-            /*
-             * On conserve l'historique de présence.
-             * Si le professeur possède déjà des présences,
-             * on le désactive au lieu de supprimer son historique.
-             */
-
-            const attendanceCheck =
-                await pool.query(
-                    `
-                    SELECT COUNT(*) AS total
-                    FROM teacher_attendance
-                    WHERE teacher_id = $1
-                    AND school_id = $2
-                    `,
-                    [
-                        teacherId,
-                        schoolId
-                    ]
-                );
-
-            const attendanceCount =
-                Number(
-                    attendanceCheck.rows[0].total
-                );
-
-            if (attendanceCount > 0) {
-
-                const result =
-                    await pool.query(
-                        `
-                        UPDATE teachers
-                        SET active = false
-                        WHERE id = $1
-                        AND school_id = $2
-                        RETURNING *
-                        `,
-                        [
-                            teacherId,
-                            schoolId
-                        ]
-                    );
-
-                return res.json({
-                    success: true,
-                    archived: true,
-                    message:
-                        "Le professeur possède un historique de présence. Il a été désactivé afin de conserver les données.",
-                    teacher:
-                        result.rows[0]
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    DELETE FROM teachers
-                    WHERE id = $1
-                    AND school_id = $2
-                    RETURNING
-                        id,
-                        first_name,
-                        last_name
-                    `,
-                    [
-                        teacherId,
-                        schoolId
-                    ]
-                );
-
-            res.json({
-                success: true,
-                archived: false,
-                message:
-                    "Professeur supprimé avec succès.",
-                teacher:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur suppression professeur :",
-                error
-            );
-
-            if (error.code === "23503") {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Impossible de supprimer ce professeur car des données sont encore liées. Le professeur doit être désactivé."
-                });
-
-            }
-
-            res.status(500).json({
+        if (result.rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message:
-                    "Impossible de supprimer le professeur."
+                message: "Professeur introuvable.",
             });
-
         }
 
+        res.json({
+            success: true,
+            message: "Professeur modifié avec succès.",
+            teacher: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur PUT teacher :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la modification du professeur.",
+        });
     }
-);
+});
 
-/* =========================================================
-   CLASSES — LECTURE
-========================================================= */
+/* DELETE PROFESSEUR */
 
-app.get(
-    "/api/classes",
-    authenticateToken,
-    async (req, res) => {
+app.delete("/api/teachers/:id", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            DELETE FROM teachers
+            WHERE id = $1
+              AND school_id = $2
+            RETURNING id, first_name, last_name
+            `,
+            [req.params.id, req.user.school_id]
+        );
 
-        try {
-
-            const result =
-                await pool.query(
-                    `
-                    SELECT *
-                    FROM classes
-                    WHERE school_id = $1
-                    ORDER BY name ASC
-                    `,
-                    [req.user.school_id]
-                );
-
-            res.json({
-                success: true,
-                classes:
-                    result.rows
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur classes :",
-                error
-            );
-
-            res.status(500).json({
+        if (result.rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message:
-                    "Impossible de charger les classes."
+                message: "Professeur introuvable.",
             });
-
         }
 
-    }
-);
+        res.json({
+            success: true,
+            message: "Professeur supprimé avec succès.",
+            teacher: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur DELETE teacher :", error);
 
-/* =========================================================
-   MATIÈRES — LECTURE
-========================================================= */
-
-app.get(
-    "/api/subjects",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const result =
-                await pool.query(
-                    `
-                    SELECT
-                        id,
-                        school_id,
-                        name,
-                        code,
-                        coefficient,
-                        description,
-                        created_at
-                    FROM subjects
-                    WHERE school_id = $1
-                    ORDER BY name ASC
-                    `,
-                    [req.user.school_id]
-                );
-
-            res.json({
-                success: true,
-                subjects:
-                    result.rows
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur subjects :",
-                error
-            );
-
-            res.status(500).json({
+        if (error.code === "23503") {
+            return res.status(409).json({
                 success: false,
                 message:
-                    "Impossible de charger les matières."
+                    "Ce professeur est utilisé dans d'autres données et ne peut pas être supprimé.",
             });
-
         }
 
+        res.status(500).json({
+            success: false,
+            message: "Impossible de supprimer ce professeur.",
+        });
     }
-);
+});
 
 /* =========================================================
-   MATIÈRES — AJOUT
+   CLASSES
 ========================================================= */
 
-app.post(
-    "/api/subjects",
-    authenticateToken,
-    async (req, res) => {
+app.get("/api/classes", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            SELECT *
+            FROM classes
+            WHERE school_id = $1
+            ORDER BY name ASC
+            `,
+            [req.user.school_id]
+        );
 
-        try {
+        res.json({
+            success: true,
+            classes: result.rows,
+        });
+    } catch (error) {
+        console.error("Erreur GET classes :", error);
 
-            const {
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors du chargement des classes.",
+        });
+    }
+});
+
+/* =========================================================
+   MATIÈRES
+========================================================= */
+
+/* GET */
+
+app.get("/api/subjects", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            SELECT *
+            FROM subjects
+            WHERE school_id = $1
+            ORDER BY name ASC
+            `,
+            [req.user.school_id]
+        );
+
+        res.json({
+            success: true,
+            subjects: result.rows,
+        });
+    } catch (error) {
+        console.error("Erreur GET subjects :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors du chargement des matières.",
+        });
+    }
+});
+
+/* POST */
+
+app.post("/api/subjects", authenticateToken, async (req, res) => {
+    try {
+        const { name, code, coefficient } = req.body;
+
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                message: "Le nom de la matière est obligatoire.",
+            });
+        }
+
+        const coef = Number(coefficient);
+
+        if (!Number.isFinite(coef) || coef <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Le coefficient doit être supérieur à 0.",
+            });
+        }
+
+        const result = await pool.query(
+            `
+            INSERT INTO subjects (
+                school_id,
                 name,
                 code,
-                coefficient,
-                description
-            } = req.body;
-
-            if (
-                !name ||
-                !name.trim()
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Le nom de la matière est requis."
-                });
-
-            }
-
-            const subjectName =
-                name.trim();
-
-            const subjectCode =
-                code &&
-                code.trim()
-                    ? code.trim()
-                    : null;
-
-            const subjectDescription =
-                description &&
-                description.trim()
-                    ? description.trim()
-                    : null;
-
-            const subjectCoefficient =
-                Number(coefficient);
-
-            if (
-                !Number.isFinite(subjectCoefficient) ||
-                subjectCoefficient <= 0
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Le coefficient doit être supérieur à 0."
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    INSERT INTO subjects (
-                        school_id,
-                        name,
-                        code,
-                        coefficient,
-                        description
-                    )
-                    VALUES (
-                        $1,
-                        $2,
-                        $3,
-                        $4,
-                        $5
-                    )
-                    RETURNING
-                        id,
-                        school_id,
-                        name,
-                        code,
-                        coefficient,
-                        description,
-                        created_at
-                    `,
-                    [
-                        req.user.school_id,
-                        subjectName,
-                        subjectCode,
-                        subjectCoefficient,
-                        subjectDescription
-                    ]
-                );
-
-            res.status(201).json({
-                success: true,
-                message:
-                    "Matière ajoutée avec succès.",
-                subject:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur ajout matière :",
-                error
-            );
-
-            if (
-                error.code === "23505"
-            ) {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Cette matière existe déjà dans votre école."
-                });
-
-            }
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Impossible d'ajouter la matière."
-            });
-
-        }
-
-    }
-);
-
-/* =========================================================
-   MATIÈRES — MODIFICATION
-========================================================= */
-
-app.put(
-    "/api/subjects/:id",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const subjectId =
-                Number(req.params.id);
-
-            if (
-                !Number.isInteger(subjectId)
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Identifiant de matière invalide."
-                });
-
-            }
-
-            const {
+                coefficient
+            )
+            VALUES ($1,$2,$3,$4)
+            RETURNING *
+            `,
+            [
+                req.user.school_id,
                 name,
-                code,
-                coefficient,
-                description
-            } = req.body;
+                code || null,
+                coef,
+            ]
+        );
 
-            if (
-                !name ||
-                !name.trim()
-            ) {
+        res.status(201).json({
+            success: true,
+            message: "Matière ajoutée avec succès.",
+            subject: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur POST subject :", error);
 
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Le nom de la matière est requis."
-                });
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de l'ajout de la matière.",
+        });
+    }
+});
 
-            }
+/* PUT */
 
-            const subjectCoefficient =
-                Number(coefficient);
+app.put("/api/subjects/:id", authenticateToken, async (req, res) => {
+    try {
+        const { name, code, coefficient } = req.body;
 
-            if (
-                !Number.isFinite(subjectCoefficient) ||
-                subjectCoefficient <= 0
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Le coefficient doit être supérieur à 0."
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    UPDATE subjects
-                    SET
-                        name = $1,
-                        code = $2,
-                        coefficient = $3,
-                        description = $4
-                    WHERE id = $5
-                    AND school_id = $6
-                    RETURNING
-                        id,
-                        school_id,
-                        name,
-                        code,
-                        coefficient,
-                        description,
-                        created_at
-                    `,
-                    [
-                        name.trim(),
-
-                        code &&
-                        code.trim()
-                            ? code.trim()
-                            : null,
-
-                        subjectCoefficient,
-
-                        description &&
-                        description.trim()
-                            ? description.trim()
-                            : null,
-
-                        subjectId,
-
-                        req.user.school_id
-                    ]
-                );
-
-            if (
-                result.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Matière introuvable."
-                });
-
-            }
-
-            res.json({
-                success: true,
-                message:
-                    "Matière modifiée avec succès.",
-                subject:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur modification matière :",
-                error
-            );
-
-            if (
-                error.code === "23505"
-            ) {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Une matière avec ce nom existe déjà."
-                });
-
-            }
-
-            res.status(500).json({
+        if (!name) {
+            return res.status(400).json({
                 success: false,
-                message:
-                    "Impossible de modifier la matière."
+                message: "Le nom de la matière est obligatoire.",
             });
-
         }
 
-    }
-);
+        const coef = Number(coefficient);
 
-/* =========================================================
-   MATIÈRES — SUPPRESSION
-========================================================= */
-
-app.delete(
-    "/api/subjects/:id",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const subjectId =
-                Number(req.params.id);
-
-            if (
-                !Number.isInteger(subjectId)
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Identifiant de matière invalide."
-                });
-
-            }
-
-            const usage =
-                await pool.query(
-                    `
-                    SELECT
-
-                        (
-                            SELECT COUNT(*)
-                            FROM grades
-                            WHERE subject_id = $1
-                            AND school_id = $2
-                        ) AS grades_count,
-
-                        (
-                            SELECT COUNT(*)
-                            FROM timetables
-                            WHERE subject_id = $1
-                            AND school_id = $2
-                        ) AS timetable_count
-                    `,
-                    [
-                        subjectId,
-                        req.user.school_id
-                    ]
-                );
-
-            const gradesCount =
-                Number(
-                    usage.rows[0].grades_count
-                );
-
-            const timetableCount =
-                Number(
-                    usage.rows[0].timetable_count
-                );
-
-            if (
-                gradesCount > 0 ||
-                timetableCount > 0
-            ) {
-
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Cette matière est déjà utilisée. Modifiez son coefficient au lieu de la supprimer."
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    DELETE FROM subjects
-                    WHERE id = $1
-                    AND school_id = $2
-                    RETURNING
-                        id,
-                        name
-                    `,
-                    [
-                        subjectId,
-                        req.user.school_id
-                    ]
-                );
-
-            if (
-                result.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Matière introuvable."
-                });
-
-            }
-
-            res.json({
-                success: true,
-                message:
-                    "Matière supprimée avec succès.",
-                subject:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur suppression matière :",
-                error
-            );
-
-            res.status(500).json({
+        if (!Number.isFinite(coef) || coef <= 0) {
+            return res.status(400).json({
                 success: false,
-                message:
-                    "Impossible de supprimer la matière."
+                message: "Le coefficient doit être supérieur à 0.",
             });
-
         }
 
+        const result = await pool.query(
+            `
+            UPDATE subjects
+            SET
+                name = $1,
+                code = $2,
+                coefficient = $3
+            WHERE id = $4
+              AND school_id = $5
+            RETURNING *
+            `,
+            [
+                name,
+                code || null,
+                coef,
+                req.params.id,
+                req.user.school_id,
+            ]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Matière introuvable.",
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Matière modifiée avec succès.",
+            subject: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur PUT subject :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la modification.",
+        });
     }
-);
+});
+
+/* DELETE */
+
+app.delete("/api/subjects/:id", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            DELETE FROM subjects
+            WHERE id = $1
+              AND school_id = $2
+            RETURNING id, name
+            `,
+            [req.params.id, req.user.school_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Matière introuvable.",
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Matière supprimée avec succès.",
+            subject: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Erreur DELETE subject :", error);
+
+        if (error.code === "23503") {
+            return res.status(409).json({
+                success: false,
+                message:
+                    "Cette matière est déjà utilisée et ne peut pas être supprimée.",
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: "Impossible de supprimer cette matière.",
+        });
+    }
+});
 
 /* =========================================================
-   PRÉSENCE DES PROFESSEURS AUJOURD'HUI
+   PRÉSENCE DES PROFESSEURS
 ========================================================= */
 
 app.get(
     "/api/teacher-attendance/today",
     authenticateToken,
     async (req, res) => {
-
         try {
-
-            const result =
-                await pool.query(
-                    `
-                    SELECT *
-                    FROM teacher_attendance
-                    WHERE school_id = $1
-                    AND attendance_date = CURRENT_DATE
-                    ORDER BY
-                        check_in ASC NULLS LAST
-                    `,
-                    [req.user.school_id]
-                );
+            const result = await pool.query(
+                `
+                SELECT
+                    ta.*,
+                    t.first_name,
+                    t.last_name
+                FROM teacher_attendance ta
+                INNER JOIN teachers t
+                    ON t.id = ta.teacher_id
+                   AND t.school_id = ta.school_id
+                WHERE ta.school_id = $1
+                  AND ta.date = CURRENT_DATE
+                ORDER BY t.last_name ASC, t.first_name ASC
+                `,
+                [req.user.school_id]
+            );
 
             res.json({
                 success: true,
-                attendance:
-                    result.rows
+                attendance: result.rows,
             });
-
         } catch (error) {
-
             console.error(
                 "Erreur teacher attendance :",
                 error
@@ -1926,743 +1054,312 @@ app.get(
             res.status(500).json({
                 success: false,
                 message:
-                    "Impossible de charger les présences."
+                    "Erreur lors du chargement des présences.",
             });
-
         }
-
     }
 );
 
 /* =========================================================
-   PRÉSENCE DES PROFESSEURS — LECTURE PAR DATE
+   NOTES
 ========================================================= */
 
-app.get(
-    "/api/teacher-attendance",
-    authenticateToken,
-    async (req, res) => {
+app.get("/api/grades", authenticateToken, async (req, res) => {
+    try {
+        const {
+            class_id,
+            subject_id,
+            period,
+        } = req.query;
 
-        try {
-
-            const date =
-                req.query.date ||
-                new Date()
-                    .toISOString()
-                    .slice(0, 10);
-
-            const result =
-                await pool.query(
-                    `
-                    SELECT
-                        ta.*,
-                        t.first_name,
-                        t.last_name,
-                        t.email,
-                        t.phone,
-                        t.specialization
-                    FROM teacher_attendance ta
-                    JOIN teachers t
-                        ON t.id = ta.teacher_id
-                        AND t.school_id = ta.school_id
-                    WHERE ta.school_id = $1
-                    AND ta.attendance_date = $2
-                    ORDER BY
-                        t.last_name ASC,
-                        t.first_name ASC
-                    `,
-                    [
-                        req.user.school_id,
-                        date
-                    ]
-                );
-
-            res.json({
-                success: true,
-                attendance:
-                    result.rows
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur lecture présence professeur :",
-                error
-            );
-
-            res.status(500).json({
+        if (!class_id || !subject_id || !period) {
+            return res.status(400).json({
                 success: false,
                 message:
-                    "Impossible de charger les présences des professeurs."
+                    "class_id, subject_id et period sont obligatoires.",
             });
-
         }
 
-    }
-);
-
-/* =========================================================
-   PRÉSENCE DES PROFESSEURS — ENREGISTREMENT
-========================================================= */
-
-app.post(
-    "/api/teacher-attendance",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const {
-                teacher_id,
-                attendance_date,
-                check_in,
-                check_out,
-                status,
-                note
-            } = req.body;
-
-            const teacherId =
-                Number(teacher_id);
-
-            if (
-                !Number.isInteger(teacherId)
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Professeur invalide."
-                });
-
-            }
-
-            const schoolId =
-                req.user.school_id;
-
-            const teacherCheck =
-                await pool.query(
-                    `
-                    SELECT id
-                    FROM teachers
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        teacherId,
-                        schoolId
-                    ]
-                );
-
-            if (
-                teacherCheck.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Professeur introuvable."
-                });
-
-            }
-
-            const date =
-                attendance_date ||
-                new Date()
-                    .toISOString()
-                    .slice(0, 10);
-
-            const finalStatus =
-                status || "present";
-
-            const allowedStatuses = [
-                "present",
-                "late",
-                "absent"
-            ];
-
-            if (
-                !allowedStatuses.includes(
-                    finalStatus
-                )
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Statut de présence invalide."
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    INSERT INTO teacher_attendance (
-                        school_id,
-                        teacher_id,
-                        attendance_date,
-                        check_in,
-                        check_out,
-                        status,
-                        note
-                    )
-                    VALUES (
-                        $1,$2,$3,$4,
-                        $5,$6,$7
-                    )
-                    ON CONFLICT (
-                        teacher_id,
-                        attendance_date
-                    )
-                    DO UPDATE SET
-                        check_in =
-                            EXCLUDED.check_in,
-                        check_out =
-                            EXCLUDED.check_out,
-                        status =
-                            EXCLUDED.status,
-                        note =
-                            EXCLUDED.note
-                    RETURNING *
-                    `,
-                    [
-                        schoolId,
-                        teacherId,
-                        date,
-                        check_in || null,
-                        check_out || null,
-                        finalStatus,
-                        note || null
-                    ]
-                );
-
-            res.json({
-                success: true,
-                message:
-                    "Présence enregistrée avec succès.",
-                attendance:
-                    result.rows[0]
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur enregistrement présence professeur :",
-                error
-            );
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Impossible d'enregistrer la présence."
-            });
-
-        }
-
-    }
-);
-
-/* =========================================================
-   NOTES — LECTURE
-========================================================= */
-
-app.get(
-    "/api/grades",
-    authenticateToken,
-    async (req, res) => {
-
-        try {
-
-            const {
-                class_id,
-                subject_id,
-                period
-            } = req.query;
-
-            if (
-                !class_id ||
-                !subject_id ||
-                !period
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "class_id, subject_id et period sont requis."
-                });
-
-            }
-
-            const schoolId =
-                req.user.school_id;
-
-            const classCheck =
-                await pool.query(
-                    `
-                    SELECT id
-                    FROM classes
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        class_id,
-                        schoolId
-                    ]
-                );
-
-            if (
-                classCheck.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Classe introuvable."
-                });
-
-            }
-
-            const subjectCheck =
-                await pool.query(
-                    `
-                    SELECT id
-                    FROM subjects
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        subject_id,
-                        schoolId
-                    ]
-                );
-
-            if (
-                subjectCheck.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Matière introuvable."
-                });
-
-            }
-
-            const result =
-                await pool.query(
-                    `
-                    SELECT
-                        id,
-                        student_id,
-                        subject_id,
-                        class_id,
-                        period,
-                        grade,
-                        max_grade
-                    FROM grades
-                    WHERE school_id = $1
-                    AND class_id = $2
-                    AND subject_id = $3
-                    AND period = $4
-                    ORDER BY created_at ASC
-                    `,
-                    [
-                        schoolId,
-                        class_id,
-                        subject_id,
-                        period
-                    ]
-                );
-
-            res.json({
-                success: true,
-                grades:
-                    result.rows
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur lecture notes :",
-                error
-            );
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Impossible de charger les notes."
-            });
-
-        }
-
-    }
-);
-
-/* =========================================================
-   NOTES — ENREGISTREMENT
-========================================================= */
-
-app.post(
-    "/api/grades",
-    authenticateToken,
-    async (req, res) => {
-
-        const client =
-            await pool.connect();
-
-        try {
-
-            const {
+        const result = await pool.query(
+            `
+            SELECT
+                g.*,
+                s.first_name,
+                s.last_name,
+                sub.name AS subject_name
+            FROM grades g
+            INNER JOIN students s
+                ON s.id = g.student_id
+               AND s.school_id = g.school_id
+            INNER JOIN subjects sub
+                ON sub.id = g.subject_id
+               AND sub.school_id = g.school_id
+            WHERE g.school_id = $1
+              AND g.class_id = $2
+              AND g.subject_id = $3
+              AND g.period = $4
+            ORDER BY s.last_name ASC, s.first_name ASC
+            `,
+            [
+                req.user.school_id,
                 class_id,
                 subject_id,
                 period,
-                max_grade,
-                grades
-            } = req.body;
-
-            if (
-                !class_id ||
-                !subject_id ||
-                !period ||
-                !Array.isArray(grades)
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Données de notes incomplètes."
-                });
-
-            }
-
-            const maxGrade =
-                Number(max_grade);
-
-            if (
-                !Number.isFinite(maxGrade) ||
-                maxGrade <= 0 ||
-                maxGrade > 400
-            ) {
-
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "La note maximale doit être comprise entre 1 et 400."
-                });
-
-            }
-
-            const schoolId =
-                req.user.school_id;
-
-            const classCheck =
-                await pool.query(
-                    `
-                    SELECT id
-                    FROM classes
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        class_id,
-                        schoolId
-                    ]
-                );
-
-            if (
-                classCheck.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Classe introuvable."
-                });
-
-            }
-
-            const subjectCheck =
-                await pool.query(
-                    `
-                    SELECT id
-                    FROM subjects
-                    WHERE id = $1
-                    AND school_id = $2
-                    LIMIT 1
-                    `,
-                    [
-                        subject_id,
-                        schoolId
-                    ]
-                );
-
-            if (
-                subjectCheck.rows.length === 0
-            ) {
-
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Matière introuvable."
-                });
-
-            }
-
-            await client.query("BEGIN");
-
-            for (
-                const item of grades
-            ) {
-
-                if (
-                    !item.student_id
-                ) {
-                    continue;
-                }
-
-                const studentCheck =
-                    await client.query(
-                        `
-                        SELECT id
-                        FROM students
-                        WHERE id = $1
-                        AND school_id = $2
-                        AND class_id = $3
-                        LIMIT 1
-                        `,
-                        [
-                            item.student_id,
-                            schoolId,
-                            class_id
-                        ]
-                    );
-
-                if (
-                    studentCheck.rows.length === 0
-                ) {
-                    continue;
-                }
-
-                const rawGrade =
-                    item.grade;
-
-                if (
-                    rawGrade === "" ||
-                    rawGrade === null ||
-                    typeof rawGrade === "undefined"
-                ) {
-
-                    await client.query(
-                        `
-                        DELETE FROM grades
-                        WHERE school_id = $1
-                        AND student_id = $2
-                        AND subject_id = $3
-                        AND class_id = $4
-                        AND period = $5
-                        `,
-                        [
-                            schoolId,
-                            item.student_id,
-                            subject_id,
-                            class_id,
-                            period
-                        ]
-                    );
-
-                    continue;
-                }
-
-                const grade =
-                    Number(rawGrade);
-
-                if (
-                    !Number.isFinite(grade) ||
-                    grade < 0 ||
-                    grade > maxGrade
-                ) {
-
-                    throw new Error(
-                        `Note invalide pour l'élève ${item.student_id}.`
-                    );
-
-                }
-
-                await client.query(
-                    `
-                    INSERT INTO grades (
-                        school_id,
-                        student_id,
-                        subject_id,
-                        class_id,
-                        period,
-                        grade,
-                        max_grade
-                    )
-                    VALUES (
-                        $1,
-                        $2,
-                        $3,
-                        $4,
-                        $5,
-                        $6,
-                        $7
-                    )
-                    ON CONFLICT (
-                        school_id,
-                        student_id,
-                        subject_id,
-                        class_id,
-                        period
-                    )
-                    DO UPDATE SET
-                        grade =
-                            EXCLUDED.grade,
-                        max_grade =
-                            EXCLUDED.max_grade,
-                        updated_at =
-                            NOW()
-                    `,
-                    [
-                        schoolId,
-                        item.student_id,
-                        subject_id,
-                        class_id,
-                        period,
-                        grade,
-                        maxGrade
-                    ]
-                );
-
-            }
-
-            await client.query("COMMIT");
-
-            res.json({
-                success: true,
-                message:
-                    "Notes enregistrées avec succès."
-            });
-
-        } catch (error) {
-
-            await client.query(
-                "ROLLBACK"
-            );
-
-            console.error(
-                "Erreur enregistrement notes :",
-                error
-            );
-
-            res.status(500).json({
-                success: false,
-                message:
-                    error.message ||
-                    "Impossible d'enregistrer les notes."
-            });
-
-        } finally {
-
-            client.release();
-
-        }
-
-    }
-);
-
-/* =========================================================
-   TEST SERVEUR
-========================================================= */
-
-app.get(
-    "/api/health",
-    async (req, res) => {
-
-        try {
-
-            await pool.query(
-                "SELECT 1"
-            );
-
-            res.json({
-                success: true,
-                message:
-                    "Serveur et base de données fonctionnels."
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erreur health :",
-                error
-            );
-
-            res.status(500).json({
-                success: false,
-                message:
-                    "Base de données inaccessible."
-            });
-
-        }
-
-    }
-);
-
-/* =========================================================
-   ROUTES API INCONNUES
-========================================================= */
-
-app.use(
-    "/api",
-    (req, res) => {
-
-        res.status(404).json({
-            success: false,
-            message:
-                "Route API introuvable."
-        });
-
-    }
-);
-
-/* =========================================================
-   ERREUR GÉNÉRALE
-========================================================= */
-
-app.use(
-    (err, req, res, next) => {
-
-        console.error(
-            "Erreur serveur :",
-            err
+            ]
         );
+
+        res.json({
+            success: true,
+            grades: result.rows,
+        });
+    } catch (error) {
+        console.error("Erreur GET grades :", error);
 
         res.status(500).json({
             success: false,
-            message:
-                "Erreur interne du serveur."
+            message: "Erreur lors du chargement des notes.",
         });
-
     }
-);
+});
+
+app.post("/api/grades", authenticateToken, async (req, res) => {
+    const client = await pool.connect();
+
+    try {
+        const {
+            student_id,
+            subject_id,
+            class_id,
+            period,
+            score,
+            max_grade,
+        } = req.body;
+
+        if (
+            !student_id ||
+            !subject_id ||
+            !class_id ||
+            !period
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Données de note incomplètes.",
+            });
+        }
+
+        const max = Number(max_grade);
+
+        if (!Number.isFinite(max) || max < 1 || max > 400) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "La note maximale doit être comprise entre 1 et 400.",
+            });
+        }
+
+        await client.query("BEGIN");
+
+        const studentCheck = await client.query(
+            `
+            SELECT id
+            FROM students
+            WHERE id = $1
+              AND school_id = $2
+              AND class_id = $3
+            `,
+            [
+                student_id,
+                req.user.school_id,
+                class_id,
+            ]
+        );
+
+        if (studentCheck.rows.length === 0) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Élève invalide pour cette classe.",
+            });
+        }
+
+        const subjectCheck = await client.query(
+            `
+            SELECT id
+            FROM subjects
+            WHERE id = $1
+              AND school_id = $2
+            `,
+            [
+                subject_id,
+                req.user.school_id,
+            ]
+        );
+
+        if (subjectCheck.rows.length === 0) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: "Matière invalide.",
+            });
+        }
+
+        if (
+            score === "" ||
+            score === null ||
+            typeof score === "undefined"
+        ) {
+            await client.query(
+                `
+                DELETE FROM grades
+                WHERE school_id = $1
+                  AND student_id = $2
+                  AND subject_id = $3
+                  AND class_id = $4
+                  AND period = $5
+                `,
+                [
+                    req.user.school_id,
+                    student_id,
+                    subject_id,
+                    class_id,
+                    period,
+                ]
+            );
+
+            await client.query("COMMIT");
+
+            return res.json({
+                success: true,
+                message: "Note supprimée.",
+            });
+        }
+
+        const numericScore = Number(score);
+
+        if (
+            !Number.isFinite(numericScore) ||
+            numericScore < 0 ||
+            numericScore > max
+        ) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "La note doit être comprise entre 0 et la note maximale.",
+            });
+        }
+
+        const result = await client.query(
+            `
+            INSERT INTO grades (
+                school_id,
+                student_id,
+                subject_id,
+                class_id,
+                period,
+                score,
+                max_grade
+            )
+            VALUES ($1,$2,$3,$4,$5,$6,$7)
+            ON CONFLICT (
+                school_id,
+                student_id,
+                subject_id,
+                class_id,
+                period
+            )
+            DO UPDATE SET
+                score = EXCLUDED.score,
+                max_grade = EXCLUDED.max_grade
+            RETURNING *
+            `,
+            [
+                req.user.school_id,
+                student_id,
+                subject_id,
+                class_id,
+                period,
+                numericScore,
+                max,
+            ]
+        );
+
+        await client.query("COMMIT");
+
+        res.json({
+            success: true,
+            message: "Note enregistrée avec succès.",
+            grade: result.rows[0],
+        });
+    } catch (error) {
+        await client.query("ROLLBACK");
+
+        console.error("Erreur POST grade :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de l'enregistrement de la note.",
+        });
+    } finally {
+        client.release();
+    }
+});
+
+/* =========================================================
+   HEALTH CHECK
+========================================================= */
+
+app.get("/api/health", async (req, res) => {
+    try {
+        await pool.query("SELECT 1");
+
+        res.json({
+            success: true,
+            message: "Serveur et base de données fonctionnels.",
+        });
+    } catch (error) {
+        console.error("Erreur health :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Base de données inaccessible.",
+        });
+    }
+});
+
+/* =========================================================
+   API INCONNUE
+========================================================= */
+
+app.use("/api", (req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route API introuvable.",
+    });
+});
+
+/* =========================================================
+   GESTION DES ERREURS
+========================================================= */
+
+app.use((error, req, res, next) => {
+    console.error("Erreur générale :", error);
+
+    res.status(500).json({
+        success: false,
+        message: "Erreur interne du serveur.",
+    });
+});
 
 /* =========================================================
    DÉMARRAGE
 ========================================================= */
 
-app.listen(
-    PORT,
-    () => {
-
-        console.log(
-            `Serveur Gestion École démarré sur le port ${PORT}`
-        );
-
-    }
-);
+app.listen(PORT, () => {
+    console.log(`Serveur Gestion École démarré sur le port ${PORT}`);
+});
 ```
