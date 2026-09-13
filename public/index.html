@@ -3,57 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion École</title>
+
+    <title>Gestion École — Système de gestion scolaire</title>
 
     <style>
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
             font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #173f73;
+            background: #f5f7fb;
+            color: #172033;
         }
 
         header {
-            background: white;
-            padding: 20px 8%;
-            border-bottom: 1px solid #ddd;
+            background: #111827;
+            color: white;
+            padding: 22px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .login {
+            background: white;
+            color: #111827;
+            padding: 11px 20px;
+            border-radius: 7px;
+            text-decoration: none;
             font-weight: bold;
         }
 
         .hero {
-            min-height: 500px;
+            min-height: 75vh;
             display: flex;
             align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px 20px;
+            padding: 60px 7%;
+        }
+
+        .hero-content {
+            max-width: 750px;
         }
 
         .hero h1 {
-            font-size: 55px;
-            margin-bottom: 20px;
+            font-size: 48px;
+            line-height: 1.1;
+            margin-bottom: 22px;
         }
 
         .hero p {
-            font-size: 18px;
-            color: #687386;
-            max-width: 600px;
-            margin: auto;
+            font-size: 19px;
             line-height: 1.7;
+            color: #5b6475;
+            margin-bottom: 30px;
         }
 
-        .btn {
+        .button {
             display: inline-block;
-            margin-top: 30px;
-            padding: 15px 28px;
-            background: #173f73;
+            background: #2563eb;
             color: white;
-            text-decoration: none;
+            padding: 14px 25px;
             border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 0 7% 60px;
+        }
+
+        .feature {
+            background: white;
+            padding: 28px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .feature h3 {
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            color: #667085;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 800px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -62,22 +115,58 @@
 
 <header>
     <div class="logo">Gestion École</div>
+
+    <a href="/admin.html" class="login">
+        Accéder à l'administration
+    </a>
 </header>
 
 <section class="hero">
 
-    <div>
-        <h1>Bienvenue sur Gestion École</h1>
+    <div class="hero-content">
+
+        <h1>
+            La gestion complète de votre établissement scolaire
+        </h1>
 
         <p>
-            Une plateforme moderne pour gérer les élèves,
-            les professeurs, les classes, les notes,
-            les présences et l'administration scolaire.
+            Une plateforme moderne pour gérer les élèves, les professeurs,
+            les classes, les matières, les présences, les notes,
+            les paiements et les bulletins scolaires.
         </p>
 
-        <a href="login.html" class="btn">
-            Se connecter
+        <a href="/admin.html" class="button">
+            Ouvrir le tableau de bord
         </a>
+
+    </div>
+
+</section>
+
+<section class="features">
+
+    <div class="feature">
+        <h3>Gestion des élèves</h3>
+        <p>
+            Gérez les dossiers, classes, informations et parcours scolaires
+            de vos élèves.
+        </p>
+    </div>
+
+    <div class="feature">
+        <h3>Gestion des professeurs</h3>
+        <p>
+            Suivez les enseignants, leurs matières, leurs classes
+            et leurs présences.
+        </p>
+    </div>
+
+    <div class="feature">
+        <h3>Notes et bulletins</h3>
+        <p>
+            Saisissez les notes, calculez les moyennes et préparez
+            les bulletins scolaires.
+        </p>
     </div>
 
 </section>
