@@ -3,408 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Gestion École — Plateforme scolaire</title>
-
-    <meta name="description"
-          content="Gestion École — plateforme moderne de gestion des établissements scolaires.">
+    <title>Gestion École</title>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
-            color: #142033;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #173f73;
         }
-
-        a {
-            text-decoration: none;
-        }
-
-        /* NAVIGATION */
 
         header {
-            height: 72px;
-            background: #ffffff;
-            border-bottom: 1px solid #e5e9f0;
-            display: flex;
-            align-items: center;
-        }
-
-        .nav {
-            width: 90%;
-            max-width: 1200px;
-            margin: auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: white;
+            padding: 20px 8%;
+            border-bottom: 1px solid #ddd;
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
-            color: #173f73;
         }
 
-        .logo-box {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: #173f73;
-            color: white;
+        .hero {
+            min-height: 500px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .nav-links a {
-            color: #536174;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .nav-links a:hover {
-            color: #173f73;
-        }
-
-        .login {
-            background: #173f73;
-            color: white !important;
-            padding: 11px 20px;
-            border-radius: 6px;
-        }
-
-        /* HERO */
-
-        .hero {
-            min-height: 620px;
-            display: flex;
-            align-items: center;
-            background: linear-gradient(135deg, #f4f8fc, #ffffff);
-        }
-
-        .hero-container {
-            width: 90%;
-            max-width: 1200px;
-            margin: auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 70px;
-            align-items: center;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 8px 14px;
-            background: #e7eef7;
-            color: #173f73;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 20px;
+            text-align: center;
+            padding: 40px 20px;
         }
 
         .hero h1 {
-            font-size: 58px;
-            line-height: 1.08;
-            margin-bottom: 22px;
-            color: #102b4a;
-        }
-
-        .hero h1 span {
-            color: #173f73;
+            font-size: 55px;
+            margin-bottom: 20px;
         }
 
         .hero p {
-            color: #667386;
-            font-size: 17px;
-            line-height: 1.8;
-            max-width: 570px;
-            margin-bottom: 30px;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+            font-size: 18px;
+            color: #687386;
+            max-width: 600px;
+            margin: auto;
+            line-height: 1.7;
         }
 
         .btn {
             display: inline-block;
-            padding: 14px 23px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .btn-primary {
+            margin-top: 30px;
+            padding: 15px 28px;
             background: #173f73;
             color: white;
-        }
-
-        .btn-primary:hover {
-            background: #0d2c52;
-        }
-
-        .btn-secondary {
-            background: white;
-            border: 1px solid #ccd5e0;
-            color: #173f73;
-        }
-
-        /* PREVIEW */
-
-        .preview {
-            background: white;
-            border: 1px solid #e0e5ec;
-            border-radius: 15px;
-            padding: 18px;
-            box-shadow: 0 20px 50px rgba(20, 45, 75, 0.12);
-        }
-
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            margin-bottom: 15px;
-        }
-
-        .preview-header strong {
-            color: #173f73;
-        }
-
-        .status {
-            background: #eaf7ef;
-            color: #277344;
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 75px 1fr;
-            min-height: 330px;
-            border: 1px solid #e5e9f0;
-            border-radius: 9px;
-            overflow: hidden;
-        }
-
-        .sidebar {
-            background: #173f73;
-            padding: 18px 10px;
-        }
-
-        .sidebar div {
-            height: 9px;
-            background: rgba(255,255,255,.3);
-            border-radius: 5px;
-            margin-bottom: 17px;
-        }
-
-        .sidebar div:first-child {
-            background: white;
-        }
-
-        .dash-content {
-            padding: 20px;
-            background: #f8fafc;
-        }
-
-        .dash-content h3 {
-            margin-bottom: 18px;
-            font-size: 16px;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .card {
-            background: white;
-            padding: 15px;
-            border: 1px solid #e3e8ef;
+            text-decoration: none;
             border-radius: 7px;
-        }
-
-        .card small {
-            color: #7a8494;
-            font-size: 9px;
-        }
-
-        .card strong {
-            display: block;
-            margin-top: 5px;
-            color: #173f73;
-            font-size: 20px;
-        }
-
-        .chart {
-            height: 115px;
-            margin-top: 12px;
-            background: white;
-            border: 1px solid #e3e8ef;
-            border-radius: 7px;
-            display: flex;
-            align-items: flex-end;
-            gap: 12px;
-            padding: 15px;
-        }
-
-        .bar {
-            width: 12%;
-            background: #173f73;
-            border-radius: 4px 4px 0 0;
-        }
-
-        .bar:nth-child(1) { height: 40%; }
-        .bar:nth-child(2) { height: 65%; }
-        .bar:nth-child(3) { height: 50%; }
-        .bar:nth-child(4) { height: 80%; }
-        .bar:nth-child(5) { height: 70%; }
-        .bar:nth-child(6) { height: 90%; }
-
-        /* FEATURES */
-
-        .features {
-            background: white;
-            padding: 90px 5%;
-        }
-
-        .section-title {
-            text-align: center;
-            max-width: 700px;
-            margin: auto;
-            margin-bottom: 50px;
-        }
-
-        .section-title h2 {
-            font-size: 36px;
-            margin-bottom: 15px;
-            color: #142b47;
-        }
-
-        .section-title p {
-            color: #6b7687;
-        }
-
-        .grid {
-            max-width: 1200px;
-            margin: auto;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .feature {
-            border: 1px solid #e3e8ef;
-            border-radius: 10px;
-            padding: 28px;
-            background: white;
-        }
-
-        .feature-number {
-            color: #173f73;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .feature h3 {
-            margin-bottom: 10px;
-            color: #172d47;
-        }
-
-        .feature p {
-            color: #697587;
-            font-size: 14px;
-            line-height: 1.7;
-        }
-
-        /* FOOTER */
-
-        footer {
-            background: #0b1d33;
-            color: white;
-            padding: 40px 5%;
-            text-align: center;
-        }
-
-        footer p {
-            color: #a8b5c5;
-            font-size: 13px;
-            margin-top: 8px;
-        }
-
-        /* MOBILE */
-
-        @media (max-width: 850px) {
-
-            .nav-links {
-                gap: 12px;
-            }
-
-            .hero-container {
-                grid-template-columns: 1fr;
-                padding: 70px 0;
-            }
-
-            .hero h1 {
-                font-size: 43px;
-            }
-
-            .grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 600px) {
-
-            .nav-links a:not(.login) {
-                display: none;
-            }
-
-            .hero {
-                min-height: auto;
-            }
-
-            .hero-container {
-                padding: 80px 0;
-            }
-
-            .hero h1 {
-                font-size: 38px;
-            }
-
-            .cards {
-                grid-template-columns: 1fr;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .dashboard {
-                grid-template-columns: 55px 1fr;
-            }
         }
     </style>
 </head>
@@ -412,213 +61,26 @@
 <body>
 
 <header>
-
-    <div class="nav">
-
-        <a href="index.html" class="logo">
-            <div class="logo-box">GE</div>
-            Gestion École
-        </a>
-
-        <div class="nav-links">
-            <a href="#fonctionnalites">Fonctionnalités</a>
-            <a href="#modules">Modules</a>
-            <a href="login.html" class="login">Se connecter</a>
-        </div>
-
-    </div>
-
+    <div class="logo">Gestion École</div>
 </header>
-
 
 <section class="hero">
 
-    <div class="hero-container">
-
-        <div>
-
-            <div class="badge">
-                PLATEFORME DE GESTION SCOLAIRE
-            </div>
-
-            <h1>
-                Une gestion scolaire
-                <span>plus simple.</span>
-            </h1>
-
-            <p>
-                Centralisez la gestion de votre établissement dans
-                une seule plateforme. Élèves, professeurs, classes,
-                notes, présences, paiements et bulletins sont réunis
-                dans un environnement moderne et organisé.
-            </p>
-
-            <div class="buttons">
-
-                <a href="login.html" class="btn btn-primary">
-                    Accéder à mon espace
-                </a>
-
-                <a href="#fonctionnalites" class="btn btn-secondary">
-                    Découvrir
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <div class="preview">
-
-            <div class="preview-header">
-                <strong>Tableau de bord</strong>
-                <span class="status">Système opérationnel</span>
-            </div>
-
-            <div class="dashboard">
-
-                <div class="sidebar">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                </div>
-
-                <div class="dash-content">
-
-                    <h3>Vue générale</h3>
-
-                    <div class="cards">
-
-                        <div class="card">
-                            <small>Élèves</small>
-                            <strong>—</strong>
-                        </div>
-
-                        <div class="card">
-                            <small>Professeurs</small>
-                            <strong>—</strong>
-                        </div>
-
-                        <div class="card">
-                            <small>Classes</small>
-                            <strong>—</strong>
-                        </div>
-
-                    </div>
-
-                    <div class="chart">
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<section class="features" id="fonctionnalites">
-
-    <div class="section-title">
-
-        <h2>
-            Tout votre établissement au même endroit
-        </h2>
+    <div>
+        <h1>Bienvenue sur Gestion École</h1>
 
         <p>
-            Une plateforme conçue pour simplifier le travail
-            administratif et améliorer le suivi des élèves.
+            Une plateforme moderne pour gérer les élèves,
+            les professeurs, les classes, les notes,
+            les présences et l'administration scolaire.
         </p>
 
-    </div>
-
-
-    <div class="grid" id="modules">
-
-        <div class="feature">
-            <div class="feature-number">01</div>
-            <h3>Gestion des élèves</h3>
-            <p>
-                Gérez les dossiers, inscriptions, classes,
-                informations personnelles et historiques scolaires.
-            </p>
-        </div>
-
-        <div class="feature">
-            <div class="feature-number">02</div>
-            <h3>Gestion des professeurs</h3>
-            <p>
-                Organisez les enseignants, leurs matières,
-                leurs classes et leurs activités.
-            </p>
-        </div>
-
-        <div class="feature">
-            <div class="feature-number">03</div>
-            <h3>Notes et bulletins</h3>
-            <p>
-                Saisissez les notes, calculez les moyennes
-                et préparez les bulletins scolaires.
-            </p>
-        </div>
-
-        <div class="feature">
-            <div class="feature-number">04</div>
-            <h3>Présences</h3>
-            <p>
-                Suivez les présences, absences et retards
-                des élèves et des professeurs.
-            </p>
-        </div>
-
-        <div class="feature">
-            <div class="feature-number">05</div>
-            <h3>Paiements</h3>
-            <p>
-                Suivez les frais scolaires, les paiements,
-                les soldes et l'historique financier.
-            </p>
-        </div>
-
-        <div class="feature">
-            <div class="feature-number">06</div>
-            <h3>Emploi du temps</h3>
-            <p>
-                Organisez les horaires des cours,
-                des classes et des enseignants.
-            </p>
-        </div>
-
+        <a href="login.html" class="btn">
+            Se connecter
+        </a>
     </div>
 
 </section>
-
-
-<footer>
-
-    <strong>Gestion École</strong>
-
-    <p>
-        Plateforme moderne de gestion des établissements scolaires.
-    </p>
-
-    <p>
-        © 2026 Gestion École — Tous droits réservés.
-    </p>
-
-</footer>
 
 </body>
 </html>
