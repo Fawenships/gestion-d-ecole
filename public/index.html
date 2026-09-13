@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Gestion École — Plateforme de gestion scolaire</title>
+    <title>Gestion École — Plateforme scolaire</title>
 
     <meta name="description"
-          content="Gestion École est une plateforme moderne permettant aux établissements scolaires de gérer leurs élèves, professeurs, classes, notes, présences, paiements et bulletins.">
+          content="Gestion École — plateforme moderne de gestion des établissements scolaires.">
 
     <style>
         * {
@@ -16,54 +16,30 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #173f73;
-            --primary-dark: #0d2c52;
-            --secondary: #2563a6;
-            --accent: #d9a441;
-            --text: #142033;
-            --muted: #687386;
-            --light: #f5f7fb;
-            --white: #ffffff;
-            --border: #e5e9f0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
         body {
             font-family: Arial, Helvetica, sans-serif;
-            color: var(--text);
-            background: var(--white);
-            line-height: 1.6;
+            background: #f5f7fb;
+            color: #142033;
         }
 
         a {
             text-decoration: none;
-            color: inherit;
         }
 
-        /* =========================
-           NAVIGATION
-        ========================= */
+        /* NAVIGATION */
 
         header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.96);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(12px);
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e9f0;
+            display: flex;
+            align-items: center;
         }
 
         .nav {
+            width: 90%;
             max-width: 1200px;
             margin: auto;
-            height: 76px;
-            padding: 0 25px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -72,655 +48,362 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 21px;
-            font-weight: 800;
-            color: var(--primary);
+            gap: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #173f73;
         }
 
-        .logo-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: var(--primary);
+        .logo-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #173f73;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            font-weight: 800;
+            font-weight: bold;
         }
 
-        nav ul {
-            list-style: none;
+        .nav-links {
             display: flex;
             align-items: center;
             gap: 30px;
         }
 
-        nav ul li a {
-            color: #4c586a;
+        .nav-links a {
+            color: #536174;
             font-size: 14px;
             font-weight: 600;
-            transition: 0.2s;
         }
 
-        nav ul li a:hover {
-            color: var(--primary);
+        .nav-links a:hover {
+            color: #173f73;
         }
 
-        .nav-login {
-            padding: 11px 20px;
-            border-radius: 7px;
-            background: var(--primary);
+        .login {
+            background: #173f73;
             color: white !important;
+            padding: 11px 20px;
+            border-radius: 6px;
         }
 
-        .nav-login:hover {
-            background: var(--primary-dark);
-        }
-
-        .menu-btn {
-            display: none;
-            border: none;
-            background: transparent;
-            font-size: 25px;
-            cursor: pointer;
-            color: var(--primary);
-        }
-
-        /* =========================
-           HERO
-        ========================= */
+        /* HERO */
 
         .hero {
-            min-height: 760px;
-            padding: 150px 25px 90px;
-            background:
-                linear-gradient(135deg, #f5f8fc 0%, #ffffff 55%, #edf4fb 100%);
+            min-height: 620px;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f4f8fc, #ffffff);
         }
 
         .hero-container {
+            width: 90%;
             max-width: 1200px;
             margin: auto;
             display: grid;
-            grid-template-columns: 1.05fr 0.95fr;
+            grid-template-columns: 1fr 1fr;
             gap: 70px;
             align-items: center;
         }
 
-        .hero-content {
-            max-width: 650px;
-        }
-
-        .hero-label {
+        .badge {
             display: inline-block;
             padding: 8px 14px;
-            border-radius: 30px;
-            background: #e8f0f9;
-            color: var(--primary);
+            background: #e7eef7;
+            color: #173f73;
+            border-radius: 20px;
             font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            margin-bottom: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
         }
 
         .hero h1 {
-            font-size: clamp(42px, 5vw, 68px);
-            line-height: 1.06;
-            letter-spacing: -2px;
-            margin-bottom: 24px;
-            color: #102744;
+            font-size: 58px;
+            line-height: 1.08;
+            margin-bottom: 22px;
+            color: #102b4a;
         }
 
         .hero h1 span {
-            color: var(--primary);
+            color: #173f73;
         }
 
-        .hero-text {
-            color: var(--muted);
-            font-size: 18px;
-            max-width: 590px;
-            margin-bottom: 35px;
+        .hero p {
+            color: #667386;
+            font-size: 17px;
+            line-height: 1.8;
+            max-width: 570px;
+            margin-bottom: 30px;
         }
 
-        .hero-buttons {
+        .buttons {
             display: flex;
-            gap: 14px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 50px;
-            padding: 0 25px;
-            border-radius: 7px;
-            font-weight: 700;
+            display: inline-block;
+            padding: 14px 23px;
+            border-radius: 6px;
+            font-weight: bold;
             font-size: 14px;
-            transition: 0.25s;
         }
 
         .btn-primary {
-            background: var(--primary);
+            background: #173f73;
             color: white;
         }
 
         .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
+            background: #0d2c52;
         }
 
-        .btn-outline {
-            border: 1px solid #cbd5e1;
-            color: var(--primary);
+        .btn-secondary {
             background: white;
+            border: 1px solid #ccd5e0;
+            color: #173f73;
         }
 
-        .btn-outline:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
+        /* PREVIEW */
 
-        /* =========================
-           DASHBOARD PREVIEW
-        ========================= */
-
-        .dashboard-preview {
+        .preview {
             background: white;
-            border: 1px solid var(--border);
-            border-radius: 18px;
+            border: 1px solid #e0e5ec;
+            border-radius: 15px;
             padding: 18px;
-            box-shadow: 0 25px 70px rgba(23, 63, 115, 0.13);
+            box-shadow: 0 20px 50px rgba(20, 45, 75, 0.12);
         }
 
-        .preview-top {
+        .preview-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 8px 5px 17px;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 15px;
         }
 
-        .preview-title {
-            font-weight: 800;
-            color: var(--text);
+        .preview-header strong {
+            color: #173f73;
         }
 
-        .preview-status {
-            font-size: 11px;
+        .status {
+            background: #eaf7ef;
+            color: #277344;
             padding: 6px 10px;
             border-radius: 20px;
-            background: #e9f7ef;
-            color: #247344;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: bold;
         }
 
-        .preview-sidebar {
+        .dashboard {
             display: grid;
-            grid-template-columns: 95px 1fr;
-            min-height: 360px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            grid-template-columns: 75px 1fr;
+            min-height: 330px;
+            border: 1px solid #e5e9f0;
+            border-radius: 9px;
             overflow: hidden;
         }
 
-        .mini-side {
-            background: var(--primary);
-            padding: 20px 10px;
+        .sidebar {
+            background: #173f73;
+            padding: 18px 10px;
         }
 
-        .mini-side div {
-            height: 10px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.25);
-            margin-bottom: 18px;
+        .sidebar div {
+            height: 9px;
+            background: rgba(255,255,255,.3);
+            border-radius: 5px;
+            margin-bottom: 17px;
         }
 
-        .mini-side div:first-child {
+        .sidebar div:first-child {
             background: white;
         }
 
-        .mini-main {
-            background: #f8fafc;
+        .dash-content {
             padding: 20px;
+            background: #f8fafc;
         }
 
-        .mini-main h3 {
-            font-size: 16px;
+        .dash-content h3 {
             margin-bottom: 18px;
+            font-size: 16px;
         }
 
-        .mini-cards {
+        .cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
 
-        .mini-card {
+        .card {
             background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 13px;
+            padding: 15px;
+            border: 1px solid #e3e8ef;
+            border-radius: 7px;
         }
 
-        .mini-card small {
-            color: var(--muted);
-            display: block;
+        .card small {
+            color: #7a8494;
             font-size: 9px;
         }
 
-        .mini-card strong {
+        .card strong {
             display: block;
             margin-top: 5px;
-            font-size: 18px;
-            color: var(--primary);
+            color: #173f73;
+            font-size: 20px;
         }
 
         .chart {
-            height: 120px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            height: 115px;
             margin-top: 12px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .chart-line {
-            position: absolute;
-            left: 15px;
-            right: 15px;
-            bottom: 25px;
-            height: 65px;
-            border-top: 2px solid #2563a6;
-            transform: skewY(-8deg);
-        }
-
-        /* =========================
-           TRUST
-        ========================= */
-
-        .trust {
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            padding: 22px 25px;
             background: white;
+            border: 1px solid #e3e8ef;
+            border-radius: 7px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            padding: 15px;
         }
 
-        .trust-container {
-            max-width: 1100px;
-            margin: auto;
+        .bar {
+            width: 12%;
+            background: #173f73;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .bar:nth-child(1) { height: 40%; }
+        .bar:nth-child(2) { height: 65%; }
+        .bar:nth-child(3) { height: 50%; }
+        .bar:nth-child(4) { height: 80%; }
+        .bar:nth-child(5) { height: 70%; }
+        .bar:nth-child(6) { height: 90%; }
+
+        /* FEATURES */
+
+        .features {
+            background: white;
+            padding: 90px 5%;
+        }
+
+        .section-title {
             text-align: center;
-            color: #7a8494;
-            font-size: 13px;
-        }
-
-        /* =========================
-           SECTION
-        ========================= */
-
-        section {
-            padding: 95px 25px;
-        }
-
-        .section-container {
-            max-width: 1200px;
+            max-width: 700px;
             margin: auto;
+            margin-bottom: 50px;
         }
 
-        .section-header {
-            text-align: center;
-            max-width: 720px;
-            margin: 0 auto 55px;
-        }
-
-        .section-label {
-            color: var(--primary);
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1.5px;
-            font-weight: 800;
-            margin-bottom: 12px;
-        }
-
-        .section-header h2 {
-            font-size: 38px;
-            line-height: 1.15;
-            margin-bottom: 16px;
+        .section-title h2 {
+            font-size: 36px;
+            margin-bottom: 15px;
             color: #142b47;
         }
 
-        .section-header p {
-            color: var(--muted);
-            font-size: 16px;
+        .section-title p {
+            color: #6b7687;
         }
 
-        /* =========================
-           FEATURES
-        ========================= */
-
-        .features {
-            background: var(--light);
-        }
-
-        .feature-grid {
+        .grid {
+            max-width: 1200px;
+            margin: auto;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
         }
 
-        .feature-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
+        .feature {
+            border: 1px solid #e3e8ef;
+            border-radius: 10px;
             padding: 28px;
-            transition: 0.25s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(20, 43, 71, 0.08);
+            background: white;
         }
 
         .feature-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: #e9f1f9;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 13px;
-            margin-bottom: 20px;
+            color: #173f73;
+            font-weight: bold;
+            margin-bottom: 15px;
         }
 
-        .feature-card h3 {
+        .feature h3 {
             margin-bottom: 10px;
-            font-size: 18px;
-            color: #182d47;
+            color: #172d47;
         }
 
-        .feature-card p {
-            color: var(--muted);
+        .feature p {
+            color: #697587;
             font-size: 14px;
+            line-height: 1.7;
         }
 
-        /* =========================
-           MODULES
-        ========================= */
-
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-
-        .module {
-            padding: 23px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: white;
-        }
-
-        .module h3 {
-            font-size: 15px;
-            margin-bottom: 7px;
-            color: var(--primary);
-        }
-
-        .module p {
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        /* =========================
-           SECURITY
-        ========================= */
-
-        .security {
-            background: #102d50;
-            color: white;
-        }
-
-        .security-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
-        }
-
-        .security .section-label {
-            color: #d9a441;
-        }
-
-        .security h2 {
-            color: white;
-            font-size: 38px;
-            line-height: 1.2;
-            margin-bottom: 20px;
-        }
-
-        .security p {
-            color: #c4d0df;
-            font-size: 15px;
-        }
-
-        .security-list {
-            display: grid;
-            gap: 13px;
-        }
-
-        .security-item {
-            padding: 17px 20px;
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.04);
-        }
-
-        .security-item strong {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-
-        .security-item span {
-            color: #aebdce;
-            font-size: 12px;
-        }
-
-        /* =========================
-           CTA
-        ========================= */
-
-        .cta {
-            padding: 90px 25px;
-            background: var(--light);
-        }
-
-        .cta-box {
-            max-width: 1050px;
-            margin: auto;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 15px;
-            padding: 55px;
-            text-align: center;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.05);
-        }
-
-        .cta-box h2 {
-            font-size: 35px;
-            color: #142b47;
-            margin-bottom: 14px;
-        }
-
-        .cta-box p {
-            color: var(--muted);
-            max-width: 650px;
-            margin: 0 auto 28px;
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
+        /* FOOTER */
 
         footer {
             background: #0b1d33;
             color: white;
-            padding: 55px 25px 25px;
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: auto;
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr 1fr;
-            gap: 40px;
-        }
-
-        .footer-brand p {
-            color: #9caabd;
-            font-size: 13px;
-            max-width: 330px;
-            margin-top: 15px;
-        }
-
-        .footer-column h4 {
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-
-        .footer-column a {
-            display: block;
-            color: #9caabd;
-            font-size: 13px;
-            margin-bottom: 9px;
-        }
-
-        .footer-column a:hover {
-            color: white;
-        }
-
-        .footer-bottom {
-            max-width: 1200px;
-            margin: 45px auto 0;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: #8190a4;
-            font-size: 12px;
+            padding: 40px 5%;
             text-align: center;
         }
 
-        /* =========================
-           RESPONSIVE
-        ========================= */
+        footer p {
+            color: #a8b5c5;
+            font-size: 13px;
+            margin-top: 8px;
+        }
 
-        @media (max-width: 900px) {
+        /* MOBILE */
 
-            nav ul {
-                display: none;
-                position: absolute;
-                top: 76px;
-                left: 0;
-                width: 100%;
-                background: white;
-                padding: 20px 25px;
-                border-bottom: 1px solid var(--border);
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 18px;
+        @media (max-width: 850px) {
+
+            .nav-links {
+                gap: 12px;
             }
 
-            nav ul.active {
-                display: flex;
-            }
-
-            .menu-btn {
-                display: block;
-            }
-
-            .hero-container,
-            .security-grid {
+            .hero-container {
                 grid-template-columns: 1fr;
+                padding: 70px 0;
             }
 
-            .hero {
-                padding-top: 125px;
+            .hero h1 {
+                font-size: 43px;
             }
 
-            .feature-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .modules-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .footer-container {
-                grid-template-columns: repeat(2, 1fr);
+            .grid {
+                grid-template-columns: 1fr 1fr;
             }
         }
 
         @media (max-width: 600px) {
 
-            .nav {
-                height: 68px;
-            }
-
-            nav ul {
-                top: 68px;
+            .nav-links a:not(.login) {
+                display: none;
             }
 
             .hero {
-                padding: 110px 18px 70px;
+                min-height: auto;
+            }
+
+            .hero-container {
+                padding: 80px 0;
             }
 
             .hero h1 {
-                font-size: 42px;
-                letter-spacing: -1px;
+                font-size: 38px;
             }
 
-            .hero-text {
-                font-size: 16px;
-            }
-
-            section {
-                padding: 70px 18px;
-            }
-
-            .section-header h2,
-            .security h2 {
-                font-size: 30px;
-            }
-
-            .feature-grid,
-            .modules-grid,
-            .footer-container {
+            .cards {
                 grid-template-columns: 1fr;
             }
 
-            .dashboard-preview {
-                padding: 10px;
-            }
-
-            .preview-sidebar {
-                grid-template-columns: 65px 1fr;
-            }
-
-            .mini-cards {
+            .grid {
                 grid-template-columns: 1fr;
             }
 
-            .cta-box {
-                padding: 35px 22px;
-            }
-
-            .cta-box h2 {
-                font-size: 28px;
+            .dashboard {
+                grid-template-columns: 55px 1fr;
             }
         }
     </style>
@@ -728,69 +411,56 @@
 
 <body>
 
-<!-- =========================
-     NAVIGATION
-========================= -->
-
 <header>
+
     <div class="nav">
 
         <a href="index.html" class="logo">
-            <div class="logo-mark">GE</div>
-            <span>Gestion École</span>
+            <div class="logo-box">GE</div>
+            Gestion École
         </a>
 
-        <nav>
-            <ul id="navMenu">
-                <li><a href="#accueil">Accueil</a></li>
-                <li><a href="#fonctionnalites">Fonctionnalités</a></li>
-                <li><a href="#modules">Modules</a></li>
-                <li><a href="#securite">Sécurité</a></li>
-                <li><a href="login.html" class="nav-login">Se connecter</a></li>
-            </ul>
-        </nav>
-
-        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <div class="nav-links">
+            <a href="#fonctionnalites">Fonctionnalités</a>
+            <a href="#modules">Modules</a>
+            <a href="login.html" class="login">Se connecter</a>
+        </div>
 
     </div>
+
 </header>
 
 
-<!-- =========================
-     HERO
-========================= -->
-
-<main>
-
-<section class="hero" id="accueil">
+<section class="hero">
 
     <div class="hero-container">
 
-        <div class="hero-content">
+        <div>
 
-            <div class="hero-label">
-                Plateforme de gestion scolaire
+            <div class="badge">
+                PLATEFORME DE GESTION SCOLAIRE
             </div>
 
             <h1>
-                Gérez votre établissement
-                <span>plus simplement.</span>
+                Une gestion scolaire
+                <span>plus simple.</span>
             </h1>
 
-            <p class="hero-text">
-                Une plateforme centralisée pour gérer les élèves,
-                les professeurs, les classes, les notes, les présences,
-                les paiements, les emplois du temps et les bulletins.
+            <p>
+                Centralisez la gestion de votre établissement dans
+                une seule plateforme. Élèves, professeurs, classes,
+                notes, présences, paiements et bulletins sont réunis
+                dans un environnement moderne et organisé.
             </p>
 
-            <div class="hero-buttons">
+            <div class="buttons">
 
                 <a href="login.html" class="btn btn-primary">
                     Accéder à mon espace
                 </a>
 
-                <a href="#fonctionnalites" class="btn btn-outline">
-                    Découvrir la plateforme
+                <a href="#fonctionnalites" class="btn btn-secondary">
+                    Découvrir
                 </a>
 
             </div>
@@ -798,26 +468,16 @@
         </div>
 
 
-        <!-- Aperçu de la plateforme -->
+        <div class="preview">
 
-        <div class="dashboard-preview">
-
-            <div class="preview-top">
-
-                <div class="preview-title">
-                    Tableau de bord
-                </div>
-
-                <div class="preview-status">
-                    Système opérationnel
-                </div>
-
+            <div class="preview-header">
+                <strong>Tableau de bord</strong>
+                <span class="status">Système opérationnel</span>
             </div>
 
-            <div class="preview-sidebar">
+            <div class="dashboard">
 
-                <div class="mini-side">
-                    <div></div>
+                <div class="sidebar">
                     <div></div>
                     <div></div>
                     <div></div>
@@ -826,23 +486,23 @@
                     <div></div>
                 </div>
 
-                <div class="mini-main">
+                <div class="dash-content">
 
                     <h3>Vue générale</h3>
 
-                    <div class="mini-cards">
+                    <div class="cards">
 
-                        <div class="mini-card">
+                        <div class="card">
                             <small>Élèves</small>
                             <strong>—</strong>
                         </div>
 
-                        <div class="mini-card">
+                        <div class="card">
                             <small>Professeurs</small>
                             <strong>—</strong>
                         </div>
 
-                        <div class="mini-card">
+                        <div class="card">
                             <small>Classes</small>
                             <strong>—</strong>
                         </div>
@@ -850,7 +510,12 @@
                     </div>
 
                     <div class="chart">
-                        <div class="chart-line"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
                     </div>
 
                 </div>
@@ -864,349 +529,96 @@
 </section>
 
 
-<!-- =========================
-     TRUST
-========================= -->
-
-<div class="trust">
-
-    <div class="trust-container">
-        Une solution conçue pour centraliser les opérations essentielles d'un établissement scolaire.
-    </div>
-
-</div>
-
-
-<!-- =========================
-     FONCTIONNALITÉS
-========================= -->
-
 <section class="features" id="fonctionnalites">
 
-    <div class="section-container">
-
-        <div class="section-header">
-
-            <div class="section-label">
-                Fonctionnalités
-            </div>
-
-            <h2>
-                Tout ce dont votre école a besoin
-            </h2>
-
-            <p>
-                Une gestion centralisée pour réduire les tâches administratives
-                et améliorer le suivi scolaire.
-            </p>
-
-        </div>
-
-
-        <div class="feature-grid">
-
-            <div class="feature-card">
-                <div class="feature-number">01</div>
-                <h3>Gestion des élèves</h3>
-                <p>
-                    Centralisez les dossiers des élèves, leurs informations,
-                    leurs classes, leurs présences, leurs résultats et leur historique.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-number">02</div>
-                <h3>Gestion des professeurs</h3>
-                <p>
-                    Gérez les enseignants, leurs matières, leurs classes,
-                    leurs horaires et leur présence.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-number">03</div>
-                <h3>Notes et résultats</h3>
-                <p>
-                    Saisissez les notes, calculez automatiquement les moyennes
-                    et préparez les résultats scolaires.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-number">04</div>
-                <h3>Présences</h3>
-                <p>
-                    Suivez quotidiennement les présences, absences,
-                    retards et statistiques de fréquentation.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-number">05</div>
-                <h3>Gestion financière</h3>
-                <p>
-                    Suivez les frais scolaires, les paiements,
-                    les soldes et l'historique financier des élèves.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-number">06</div>
-                <h3>Bulletins scolaires</h3>
-                <p>
-                    Préparez les bulletins à partir des résultats,
-                    moyennes et informations scolaires enregistrées.
-                </p>
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================
-     MODULES
-========================= -->
-
-<section id="modules">
-
-    <div class="section-container">
-
-        <div class="section-header">
-
-            <div class="section-label">
-                Une plateforme centralisée
-            </div>
-
-            <h2>
-                Tous les modules au même endroit
-            </h2>
-
-            <p>
-                L'administration de votre établissement devient plus claire,
-                plus organisée et plus efficace.
-            </p>
-
-        </div>
-
-
-        <div class="modules-grid">
-
-            <div class="module">
-                <h3>Élèves</h3>
-                <p>Dossiers, inscriptions, classes et historique scolaire.</p>
-            </div>
-
-            <div class="module">
-                <h3>Professeurs</h3>
-                <p>Enseignants, matières, classes et suivi des activités.</p>
-            </div>
-
-            <div class="module">
-                <h3>Classes</h3>
-                <p>Organisation des classes et affectation des élèves.</p>
-            </div>
-
-            <div class="module">
-                <h3>Matières</h3>
-                <p>Création et organisation des matières enseignées.</p>
-            </div>
-
-            <div class="module">
-                <h3>Présences</h3>
-                <p>Suivi des présences et des retards.</p>
-            </div>
-
-            <div class="module">
-                <h3>Notes</h3>
-                <p>Saisie, calcul et suivi des résultats scolaires.</p>
-            </div>
-
-            <div class="module">
-                <h3>Emploi du temps</h3>
-                <p>Organisation des horaires et des cours.</p>
-            </div>
-
-            <div class="module">
-                <h3>Paiements</h3>
-                <p>Suivi des frais, paiements et soldes.</p>
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================
-     SÉCURITÉ
-========================= -->
-
-<section class="security" id="securite">
-
-    <div class="section-container">
-
-        <div class="security-grid">
-
-            <div>
-
-                <div class="section-label">
-                    Sécurité et organisation
-                </div>
-
-                <h2>
-                    Chaque utilisateur accède uniquement à son espace.
-                </h2>
-
-                <p>
-                    La plateforme est pensée pour séparer les responsabilités
-                    et protéger les informations de chaque établissement.
-                </p>
-
-            </div>
-
-
-            <div class="security-list">
-
-                <div class="security-item">
-                    <strong>Accès sécurisé</strong>
-                    <span>Authentification protégée pour les utilisateurs.</span>
-                </div>
-
-                <div class="security-item">
-                    <strong>Gestion des rôles</strong>
-                    <span>Administrateurs, enseignants et autres profils peuvent avoir des permissions différentes.</span>
-                </div>
-
-                <div class="security-item">
-                    <strong>Données séparées</strong>
-                    <span>Les informations d'un établissement restent associées à son propre espace.</span>
-                </div>
-
-                <div class="security-item">
-                    <strong>Base de données centralisée</strong>
-                    <span>Les données peuvent être consultées et gérées depuis une plateforme unique.</span>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================
-     CTA
-========================= -->
-
-<section class="cta">
-
-    <div class="cta-box">
+    <div class="section-title">
 
         <h2>
-            Prêt à gérer votre école autrement ?
+            Tout votre établissement au même endroit
         </h2>
 
         <p>
-            Accédez à votre espace de gestion et centralisez
-            les opérations essentielles de votre établissement.
+            Une plateforme conçue pour simplifier le travail
+            administratif et améliorer le suivi des élèves.
         </p>
 
-        <a href="login.html" class="btn btn-primary">
-            Se connecter à la plateforme
-        </a>
+    </div>
+
+
+    <div class="grid" id="modules">
+
+        <div class="feature">
+            <div class="feature-number">01</div>
+            <h3>Gestion des élèves</h3>
+            <p>
+                Gérez les dossiers, inscriptions, classes,
+                informations personnelles et historiques scolaires.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-number">02</div>
+            <h3>Gestion des professeurs</h3>
+            <p>
+                Organisez les enseignants, leurs matières,
+                leurs classes et leurs activités.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-number">03</div>
+            <h3>Notes et bulletins</h3>
+            <p>
+                Saisissez les notes, calculez les moyennes
+                et préparez les bulletins scolaires.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-number">04</div>
+            <h3>Présences</h3>
+            <p>
+                Suivez les présences, absences et retards
+                des élèves et des professeurs.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-number">05</div>
+            <h3>Paiements</h3>
+            <p>
+                Suivez les frais scolaires, les paiements,
+                les soldes et l'historique financier.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="feature-number">06</div>
+            <h3>Emploi du temps</h3>
+            <p>
+                Organisez les horaires des cours,
+                des classes et des enseignants.
+            </p>
+        </div>
 
     </div>
 
 </section>
 
-</main>
-
-
-<!-- =========================
-     FOOTER
-========================= -->
 
 <footer>
 
-    <div class="footer-container">
+    <strong>Gestion École</strong>
 
-        <div class="footer-brand">
+    <p>
+        Plateforme moderne de gestion des établissements scolaires.
+    </p>
 
-            <div class="logo">
-                <div class="logo-mark">GE</div>
-                <span style="color:white;">Gestion École</span>
-            </div>
-
-            <p>
-                Une solution moderne pour centraliser
-                la gestion administrative et scolaire des établissements.
-            </p>
-
-        </div>
-
-
-        <div class="footer-column">
-
-            <h4>Plateforme</h4>
-
-            <a href="#fonctionnalites">Fonctionnalités</a>
-            <a href="#modules">Modules</a>
-            <a href="#securite">Sécurité</a>
-
-        </div>
-
-
-        <div class="footer-column">
-
-            <h4>Gestion</h4>
-
-            <a href="login.html">Élèves</a>
-            <a href="login.html">Professeurs</a>
-            <a href="login.html">Notes</a>
-            <a href="login.html">Présences</a>
-
-        </div>
-
-
-        <div class="footer-column">
-
-            <h4>Compte</h4>
-
-            <a href="login.html">Se connecter</a>
-            <a href="login.html">Accéder à l'administration</a>
-
-        </div>
-
-    </div>
-
-
-    <div class="footer-bottom">
-        © 2026 Gestion École. Tous droits réservés.
-    </div>
+    <p>
+        © 2026 Gestion École — Tous droits réservés.
+    </p>
 
 </footer>
-
-
-<script>
-
-    function toggleMenu() {
-        const menu = document.getElementById("navMenu");
-        menu.classList.toggle("active");
-    }
-
-    document.querySelectorAll("#navMenu a").forEach(link => {
-        link.addEventListener("click", () => {
-            document.getElementById("navMenu").classList.remove("active");
-        });
-    });
-
-</script>
 
 </body>
 </html>
