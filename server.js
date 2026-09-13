@@ -407,7 +407,8 @@ app.get(
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de charger le tableau de bord."
+                message:
+                    "Impossible de charger le tableau de bord."
             });
 
         }
@@ -463,7 +464,8 @@ app.get(
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de charger les élèves."
+                message:
+                    "Impossible de charger les élèves."
             });
 
         }
@@ -507,7 +509,8 @@ app.get(
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de charger les professeurs."
+                message:
+                    "Impossible de charger les professeurs."
             });
 
         }
@@ -551,7 +554,8 @@ app.get(
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de charger les classes."
+                message:
+                    "Impossible de charger les classes."
             });
 
         }
@@ -560,7 +564,7 @@ app.get(
 );
 
 /* =========================================================
-   MATIÈRES
+   MATIÈRES — LECTURE
 ========================================================= */
 
 app.get(
@@ -573,7 +577,14 @@ app.get(
             const result =
                 await pool.query(
                     `
-                    SELECT *
+                    SELECT
+                        id,
+                        school_id,
+                        name,
+                        code,
+                        coefficient,
+                        description,
+                        created_at
                     FROM subjects
                     WHERE school_id = $1
                     ORDER BY name ASC
@@ -595,7 +606,429 @@ app.get(
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de charger les matières."
+                message:
+                    "Impossible de charger les matières."
+            });
+
+        }
+
+    }
+);
+
+/* =========================================================
+   MATIÈRES — AJOUT
+========================================================= */
+
+app.post(
+    "/api/subjects",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const {
+                name,
+                code,
+                coefficient,
+                description
+            } = req.body;
+
+            if (
+                !name ||
+                !name.trim()
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le nom de la matière est requis."
+                });
+
+            }
+
+            const subjectName =
+                name.trim();
+
+            const subjectCode =
+                code &&
+                code.trim()
+                    ? code.trim()
+                    : null;
+
+            const subjectDescription =
+                description &&
+                description.trim()
+                    ? description.trim()
+                    : null;
+
+            const subjectCoefficient =
+                Number(coefficient);
+
+            if (
+                !Number.isFinite(subjectCoefficient) ||
+                subjectCoefficient <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le coefficient doit être supérieur à 0."
+                });
+
+            }
+
+            const result =
+                await pool.query(
+                    `
+                    INSERT INTO subjects (
+                        school_id,
+                        name,
+                        code,
+                        coefficient,
+                        description
+                    )
+                    VALUES (
+                        $1,
+                        $2,
+                        $3,
+                        $4,
+                        $5
+                    )
+                    RETURNING
+                        id,
+                        school_id,
+                        name,
+                        code,
+                        coefficient,
+                        description,
+                        created_at
+                    `,
+                    [
+                        req.user.school_id,
+                        subjectName,
+                        subjectCode,
+                        subjectCoefficient,
+                        subjectDescription
+                    ]
+                );
+
+            res.status(201).json({
+                success: true,
+                message:
+                    "Matière ajoutée avec succès.",
+                subject: result.rows[0]
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erreur ajout matière :",
+                error
+            );
+
+            if (
+                error.code === "23505"
+            ) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Cette matière existe déjà dans votre école."
+                });
+
+            }
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Impossible d'ajouter la matière."
+            });
+
+        }
+
+    }
+);
+
+/* =========================================================
+   MATIÈRES — MODIFICATION
+========================================================= */
+
+app.put(
+    "/api/subjects/:id",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const subjectId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(subjectId)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Identifiant de matière invalide."
+                });
+
+            }
+
+            const {
+                name,
+                code,
+                coefficient,
+                description
+            } = req.body;
+
+            if (
+                !name ||
+                !name.trim()
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le nom de la matière est requis."
+                });
+
+            }
+
+            const subjectCoefficient =
+                Number(coefficient);
+
+            if (
+                !Number.isFinite(subjectCoefficient) ||
+                subjectCoefficient <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le coefficient doit être supérieur à 0."
+                });
+
+            }
+
+            const result =
+                await pool.query(
+                    `
+                    UPDATE subjects
+                    SET
+                        name = $1,
+                        code = $2,
+                        coefficient = $3,
+                        description = $4
+                    WHERE id = $5
+                    AND school_id = $6
+                    RETURNING
+                        id,
+                        school_id,
+                        name,
+                        code,
+                        coefficient,
+                        description,
+                        created_at
+                    `,
+                    [
+                        name.trim(),
+
+                        code &&
+                        code.trim()
+                            ? code.trim()
+                            : null,
+
+                        subjectCoefficient,
+
+                        description &&
+                        description.trim()
+                            ? description.trim()
+                            : null,
+
+                        subjectId,
+
+                        req.user.school_id
+                    ]
+                );
+
+            if (
+                result.rows.length === 0
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Matière introuvable."
+                });
+
+            }
+
+            res.json({
+                success: true,
+                message:
+                    "Matière modifiée avec succès.",
+                subject:
+                    result.rows[0]
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erreur modification matière :",
+                error
+            );
+
+            if (
+                error.code === "23505"
+            ) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Une matière avec ce nom existe déjà."
+                });
+
+            }
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Impossible de modifier la matière."
+            });
+
+        }
+
+    }
+);
+
+/* =========================================================
+   MATIÈRES — SUPPRESSION
+========================================================= */
+
+app.delete(
+    "/api/subjects/:id",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const subjectId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(subjectId)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Identifiant de matière invalide."
+                });
+
+            }
+
+            /*
+             * Vérifier si la matière est déjà utilisée
+             * dans les notes ou l'emploi du temps.
+             */
+
+            const usage =
+                await pool.query(
+                    `
+                    SELECT
+
+                        (
+                            SELECT COUNT(*)
+                            FROM grades
+                            WHERE subject_id = $1
+                            AND school_id = $2
+                        ) AS grades_count,
+
+                        (
+                            SELECT COUNT(*)
+                            FROM timetables
+                            WHERE subject_id = $1
+                            AND school_id = $2
+                        ) AS timetable_count
+                    `,
+                    [
+                        subjectId,
+                        req.user.school_id
+                    ]
+                );
+
+            const gradesCount =
+                Number(
+                    usage.rows[0].grades_count
+                );
+
+            const timetableCount =
+                Number(
+                    usage.rows[0].timetable_count
+                );
+
+            if (
+                gradesCount > 0 ||
+                timetableCount > 0
+            ) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Cette matière est déjà utilisée. " +
+                        "Modifiez son coefficient au lieu de la supprimer."
+                });
+
+            }
+
+            const result =
+                await pool.query(
+                    `
+                    DELETE FROM subjects
+                    WHERE id = $1
+                    AND school_id = $2
+                    RETURNING
+                        id,
+                        name
+                    `,
+                    [
+                        subjectId,
+                        req.user.school_id
+                    ]
+                );
+
+            if (
+                result.rows.length === 0
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Matière introuvable."
+                });
+
+            }
+
+            res.json({
+                success: true,
+                message:
+                    "Matière supprimée avec succès.",
+                subject:
+                    result.rows[0]
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erreur suppression matière :",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Impossible de supprimer la matière."
             });
 
         }
@@ -628,7 +1061,8 @@ app.get(
 
             res.json({
                 success: true,
-                attendance: result.rows
+                attendance:
+                    result.rows
             });
 
         } catch (error) {
@@ -640,7 +1074,8 @@ app.get(
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de charger les présences."
+                message:
+                    "Impossible de charger les présences."
             });
 
         }
@@ -697,11 +1132,14 @@ app.get(
                     ]
                 );
 
-            if (classCheck.rows.length === 0) {
+            if (
+                classCheck.rows.length === 0
+            ) {
 
                 return res.status(404).json({
                     success: false,
-                    message: "Classe introuvable."
+                    message:
+                        "Classe introuvable."
                 });
 
             }
@@ -721,11 +1159,14 @@ app.get(
                     ]
                 );
 
-            if (subjectCheck.rows.length === 0) {
+            if (
+                subjectCheck.rows.length === 0
+            ) {
 
                 return res.status(404).json({
                     success: false,
-                    message: "Matière introuvable."
+                    message:
+                        "Matière introuvable."
                 });
 
             }
@@ -758,7 +1199,8 @@ app.get(
 
             res.json({
                 success: true,
-                grades: result.rows
+                grades:
+                    result.rows
             });
 
         } catch (error) {
@@ -853,11 +1295,14 @@ app.post(
                     ]
                 );
 
-            if (classCheck.rows.length === 0) {
+            if (
+                classCheck.rows.length === 0
+            ) {
 
                 return res.status(404).json({
                     success: false,
-                    message: "Classe introuvable."
+                    message:
+                        "Classe introuvable."
                 });
 
             }
@@ -879,20 +1324,27 @@ app.post(
                     ]
                 );
 
-            if (subjectCheck.rows.length === 0) {
+            if (
+                subjectCheck.rows.length === 0
+            ) {
 
                 return res.status(404).json({
                     success: false,
-                    message: "Matière introuvable."
+                    message:
+                        "Matière introuvable."
                 });
 
             }
 
             await client.query("BEGIN");
 
-            for (const item of grades) {
+            for (
+                const item of grades
+            ) {
 
-                if (!item.student_id) {
+                if (
+                    !item.student_id
+                ) {
                     continue;
                 }
 
@@ -923,9 +1375,9 @@ app.post(
                     item.grade;
 
                 /*
-                   Champ vide :
-                   supprimer la note existante
-                */
+                 * Champ vide :
+                 * supprimer la note existante.
+                 */
 
                 if (
                     rawGrade === "" ||
@@ -1018,12 +1470,15 @@ app.post(
 
             res.json({
                 success: true,
-                message: "Notes enregistrées avec succès."
+                message:
+                    "Notes enregistrées avec succès."
             });
 
         } catch (error) {
 
-            await client.query("ROLLBACK");
+            await client.query(
+                "ROLLBACK"
+            );
 
             console.error(
                 "Erreur enregistrement notes :",
@@ -1056,7 +1511,9 @@ app.get(
 
         try {
 
-            await pool.query("SELECT 1");
+            await pool.query(
+                "SELECT 1"
+            );
 
             res.json({
                 success: true,
@@ -1092,7 +1549,8 @@ app.use(
 
         res.status(404).json({
             success: false,
-            message: "Route API introuvable."
+            message:
+                "Route API introuvable."
         });
 
     }
@@ -1112,7 +1570,8 @@ app.use(
 
         res.status(500).json({
             success: false,
-            message: "Erreur interne du serveur."
+            message:
+                "Erreur interne du serveur."
         });
 
     }
