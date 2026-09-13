@@ -157,6 +157,30 @@
             background: #1d4ed8;
         }
 
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #172033;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .btn-small {
+            padding: 7px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+
         /* =========================
            STATISTICS
         ========================= */
@@ -260,6 +284,143 @@
             color: #6b7280;
         }
 
+        .row-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* =========================
+           MODAL
+        ========================= */
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 22px 26px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 19px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .modal-body {
+            padding: 26px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .modal-footer {
+            padding: 20px 26px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 10px 14px;
+            border-radius: 7px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .form-error.show {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #111827;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 200;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error {
+            background: #b91c1c;
+        }
+
         /* =========================
            RESPONSIVE
         ========================= */
@@ -296,6 +457,10 @@
 
             .search {
                 width: 100%;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -448,7 +613,7 @@
 
                 <button
                     class="btn btn-primary"
-                    onclick="alert('Le formulaire d’ajout sera activé dans la prochaine étape.')"
+                    onclick="openAddModal()"
                 >
                     + Ajouter un élève
                 </button>
@@ -516,6 +681,7 @@
                                 <th>Téléphone</th>
                                 <th>Classe</th>
                                 <th>Statut</th>
+                                <th>Actions</th>
                             </tr>
 
                         </thead>
@@ -523,7 +689,7 @@
                         <tbody id="studentsTable">
 
                             <tr>
-                                <td colspan="8" class="empty">
+                                <td colspan="9" class="empty">
                                     Chargement des élèves...
                                 </td>
                             </tr>
@@ -539,6 +705,102 @@
         </section>
 
     </main>
+
+
+    <!-- =========================
+         MODAL AJOUT / MODIFICATION
+    ========================= -->
+
+    <div class="modal-overlay" id="studentModal">
+
+        <div class="modal">
+
+            <div class="modal-header">
+                <h3 id="modalTitle">Ajouter un élève</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="studentForm" onsubmit="return submitStudentForm(event)">
+
+                <div class="modal-body">
+
+                    <div class="form-error" id="formError"></div>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Prénom *</label>
+                            <input type="text" id="first_name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" id="last_name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Matricule</label>
+                            <input type="text" id="matricule" placeholder="Généré automatiquement si vide">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Date de naissance</label>
+                            <input type="date" id="date_of_birth">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sexe</label>
+                            <select id="gender">
+                                <option value="">— Sélectionner —</option>
+                                <option value="M">Masculin</option>
+                                <option value="F">Féminin</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Téléphone de l'élève</label>
+                            <input type="text" id="phone">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Classe *</label>
+                            <select id="class_id" required>
+                                <option value="">— Sélectionner une classe —</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Parent / Tuteur</label>
+                            <input type="text" id="parent_name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Téléphone du parent</label>
+                            <input type="text" id="parent_phone">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Adresse</label>
+                            <input type="text" id="address">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Enregistrer</button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <div class="toast" id="toast"></div>
 
 
     <script>
@@ -585,11 +847,59 @@
 
 
         // =========================
-        // CHARGER LES ÉLÈVES
+        // ÉTAT
         // =========================
 
         let students = [];
+        let classesList = [];
+        let editingStudentId = null;
 
+
+        // =========================
+        // CHARGER LES CLASSES (pour le formulaire)
+        // =========================
+
+        async function loadClasses() {
+
+            try {
+
+                const response = await fetch(
+                    "/api/classes",
+                    {
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Erreur classes.");
+                }
+
+                classesList = data.classes || [];
+
+                const select = document.getElementById("class_id");
+
+                select.innerHTML =
+                    `<option value="">— Sélectionner une classe —</option>` +
+                    classesList.map(c =>
+                        `<option value="${c.id}">${escapeHtml(c.name)}</option>`
+                    ).join("");
+
+            } catch (error) {
+
+                console.error("Erreur chargement classes :", error);
+
+            }
+
+        }
+
+
+        // =========================
+        // CHARGER LES ÉLÈVES
+        // =========================
 
         async function loadStudents() {
 
@@ -631,7 +941,7 @@
                     "studentsTable"
                 ).innerHTML = `
                     <tr>
-                        <td colspan="8" class="empty">
+                        <td colspan="9" class="empty">
                             Impossible de charger les élèves.
                         </td>
                     </tr>
@@ -655,7 +965,7 @@
 
                 table.innerHTML = `
                     <tr>
-                        <td colspan="8" class="empty">
+                        <td colspan="9" class="empty">
                             Aucun élève enregistré.
                         </td>
                     </tr>
@@ -673,14 +983,16 @@
                             .toLocaleDateString("fr-FR")
                         : "—";
 
-                const gender =
-                    student.gender || "—";
+                const genderLabel =
+                    student.gender === "M" ? "Masculin" :
+                    student.gender === "F" ? "Féminin" :
+                    "—";
 
                 return `
                     <tr>
 
                         <td>
-                            ${escapeHtml(student.student_number || "—")}
+                            ${escapeHtml(student.matricule || "—")}
                         </td>
 
                         <td>
@@ -698,7 +1010,7 @@
                         </td>
 
                         <td>
-                            ${escapeHtml(gender)}
+                            ${escapeHtml(genderLabel)}
                         </td>
 
                         <td>
@@ -713,6 +1025,24 @@
                             <span class="badge">
                                 Actif
                             </span>
+                        </td>
+
+                        <td>
+                            <div class="row-actions">
+                                <button
+                                    class="btn btn-secondary btn-small"
+                                    onclick="openEditModal(${student.id})"
+                                >
+                                    Modifier
+                                </button>
+
+                                <button
+                                    class="btn btn-danger btn-small"
+                                    onclick="deleteStudent(${student.id})"
+                                >
+                                    Supprimer
+                                </button>
+                            </div>
                         </td>
 
                     </tr>
@@ -734,34 +1064,14 @@
             ).textContent = list.length;
 
 
-            const males = list.filter(student => {
-
-                const gender =
-                    String(student.gender || "").toLowerCase();
-
-                return (
-                    gender === "m" ||
-                    gender === "masculin" ||
-                    gender === "garçon" ||
-                    gender === "garcon"
-                );
-
-            }).length;
+            const males = list.filter(student =>
+                student.gender === "M"
+            ).length;
 
 
-            const females = list.filter(student => {
-
-                const gender =
-                    String(student.gender || "").toLowerCase();
-
-                return (
-                    gender === "f" ||
-                    gender === "féminin" ||
-                    gender === "feminin" ||
-                    gender === "fille"
-                );
-
-            }).length;
+            const females = list.filter(student =>
+                student.gender === "F"
+            ).length;
 
 
             const classes = new Set(
@@ -804,7 +1114,7 @@
 
                         return [
 
-                            student.student_number,
+                            student.matricule,
                             student.first_name,
                             student.last_name,
                             student.phone,
@@ -827,6 +1137,200 @@
 
 
         // =========================
+        // MODAL — OUVERTURE / FERMETURE
+        // =========================
+
+        function openAddModal() {
+
+            editingStudentId = null;
+
+            document.getElementById("modalTitle").textContent = "Ajouter un élève";
+            document.getElementById("studentForm").reset();
+            document.getElementById("formError").classList.remove("show");
+
+            document.getElementById("studentModal").classList.add("open");
+
+        }
+
+
+        function openEditModal(id) {
+
+            const student = students.find(s => s.id === id);
+
+            if (!student) {
+                return;
+            }
+
+            editingStudentId = id;
+
+            document.getElementById("modalTitle").textContent = "Modifier l'élève";
+            document.getElementById("formError").classList.remove("show");
+
+            document.getElementById("first_name").value = student.first_name || "";
+            document.getElementById("last_name").value = student.last_name || "";
+            document.getElementById("matricule").value = student.matricule || "";
+            document.getElementById("date_of_birth").value = student.date_of_birth
+                ? student.date_of_birth.split("T")[0]
+                : "";
+            document.getElementById("gender").value = student.gender || "";
+            document.getElementById("phone").value = student.phone || "";
+            document.getElementById("class_id").value = student.class_id || "";
+            document.getElementById("parent_name").value = student.parent_name || "";
+            document.getElementById("parent_phone").value = student.parent_phone || "";
+            document.getElementById("address").value = student.address || "";
+
+            document.getElementById("studentModal").classList.add("open");
+
+        }
+
+
+        function closeModal() {
+
+            document.getElementById("studentModal").classList.remove("open");
+            editingStudentId = null;
+
+        }
+
+
+        // =========================
+        // SOUMISSION DU FORMULAIRE
+        // =========================
+
+        async function submitStudentForm(event) {
+
+            event.preventDefault();
+
+            const errorBox = document.getElementById("formError");
+            errorBox.classList.remove("show");
+
+            const payload = {
+                first_name: document.getElementById("first_name").value.trim(),
+                last_name: document.getElementById("last_name").value.trim(),
+                matricule: document.getElementById("matricule").value.trim(),
+                date_of_birth: document.getElementById("date_of_birth").value || null,
+                gender: document.getElementById("gender").value || null,
+                phone: document.getElementById("phone").value.trim() || null,
+                class_id: document.getElementById("class_id").value,
+                parent_name: document.getElementById("parent_name").value.trim() || null,
+                parent_phone: document.getElementById("parent_phone").value.trim() || null,
+                address: document.getElementById("address").value.trim() || null
+            };
+
+            const submitBtn = document.getElementById("submitBtn");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Enregistrement...";
+
+            try {
+
+                const url = editingStudentId
+                    ? `/api/students/${editingStudentId}`
+                    : "/api/students";
+
+                const method = editingStudentId ? "PUT" : "POST";
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Une erreur est survenue.");
+                }
+
+                closeModal();
+                showToast(data.message || "Enregistré avec succès.");
+                await loadStudents();
+
+            } catch (error) {
+
+                errorBox.textContent = error.message;
+                errorBox.classList.add("show");
+
+            } finally {
+
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Enregistrer";
+
+            }
+
+            return false;
+
+        }
+
+
+        // =========================
+        // SUPPRESSION
+        // =========================
+
+        async function deleteStudent(id) {
+
+            const student = students.find(s => s.id === id);
+
+            const name = student
+                ? `${student.first_name} ${student.last_name}`
+                : "cet élève";
+
+            if (!confirm(`Supprimer ${name} ? Cette action est irréversible.`)) {
+                return;
+            }
+
+            try {
+
+                const response = await fetch(`/api/students/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Impossible de supprimer.");
+                }
+
+                showToast(data.message || "Élève supprimé.");
+                await loadStudents();
+
+            } catch (error) {
+
+                showToast(error.message, true);
+
+            }
+
+        }
+
+
+        // =========================
+        // TOAST
+        // =========================
+
+        let toastTimeout = null;
+
+        function showToast(message, isError) {
+
+            const toast = document.getElementById("toast");
+
+            toast.textContent = message;
+            toast.classList.toggle("error", Boolean(isError));
+            toast.classList.add("show");
+
+            clearTimeout(toastTimeout);
+
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3500);
+
+        }
+
+
+        // =========================
         // SÉCURITÉ HTML
         // =========================
 
@@ -846,6 +1350,7 @@
         // INITIALISATION
         // =========================
 
+        loadClasses();
         loadStudents();
 
     </script>
