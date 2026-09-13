@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -32,6 +33,7 @@
             background: #111827;
             color: white;
             padding: 25px 15px;
+            overflow-y: auto;
         }
 
         .logo {
@@ -123,6 +125,7 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 30px;
+            gap: 20px;
         }
 
         .page-header h2 {
@@ -150,6 +153,35 @@
 
         .btn-primary:hover {
             background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-edit {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 8px 12px;
+        }
+
+        .btn-edit:hover {
+            background: #dbeafe;
+        }
+
+        .btn-delete {
+            background: #fef2f2;
+            color: #b91c1c;
+            padding: 8px 12px;
+        }
+
+        .btn-delete:hover {
+            background: #fee2e2;
         }
 
         /* =========================
@@ -249,6 +281,17 @@
             font-weight: 600;
         }
 
+        .badge.empty-badge {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
         .empty {
             text-align: center;
             padding: 50px 20px;
@@ -262,6 +305,107 @@
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+        }
+
+        .success-message {
+            display: none;
+            background: #dcfce7;
+            color: #166534;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* =========================
+           MODAL
+        ========================= */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 550px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+        }
+
+        .close-btn {
+            border: none;
+            background: transparent;
+            font-size: 25px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 7px;
+            color: #374151;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .modal-footer {
+            padding: 18px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
         }
 
         /* =========================
@@ -290,7 +434,6 @@
             .page-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 15px;
             }
 
             .table-header {
@@ -329,7 +472,7 @@
             }
 
             table {
-                min-width: 700px;
+                min-width: 850px;
             }
         }
     </style>
@@ -460,7 +603,7 @@
 
                 <button
                     class="btn btn-primary"
-                    onclick="showComingSoon()"
+                    onclick="openAddClassModal()"
                 >
                     + Ajouter une classe
                 </button>
@@ -468,15 +611,20 @@
             </div>
 
 
-            <!-- ERROR -->
+            <!-- MESSAGES -->
 
             <div
                 id="errorMessage"
                 class="error-message"
             ></div>
 
+            <div
+                id="successMessage"
+                class="success-message"
+            ></div>
 
-            <!-- STATISTICS -->
+
+            <!-- STATISTIQUES -->
 
             <div class="stats">
 
@@ -552,25 +700,17 @@
 
                         <tr>
 
-                            <th>
-                                Classe
-                            </th>
+                            <th>Classe</th>
 
-                            <th>
-                                Niveau
-                            </th>
+                            <th>Niveau</th>
 
-                            <th>
-                                Section
-                            </th>
+                            <th>Section</th>
 
-                            <th>
-                                Nombre d'élèves
-                            </th>
+                            <th>Nombre d'élèves</th>
 
-                            <th>
-                                Statut
-                            </th>
+                            <th>Statut</th>
+
+                            <th>Actions</th>
 
                         </tr>
 
@@ -582,7 +722,7 @@
                         <tr>
 
                             <td
-                                colspan="5"
+                                colspan="6"
                                 class="empty"
                             >
                                 Chargement des classes...
@@ -599,6 +739,117 @@
         </section>
 
     </main>
+
+
+    <!-- =========================
+         MODAL CLASSE
+    ========================= -->
+
+    <div
+        class="modal-overlay"
+        id="classModal"
+    >
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <h3 id="modalTitle">
+                    Ajouter une classe
+                </h3>
+
+                <button
+                    type="button"
+                    class="close-btn"
+                    onclick="closeClassModal()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="classForm">
+
+                <div class="modal-body">
+
+                    <div class="form-group">
+
+                        <label for="className">
+                            Nom de la classe *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="className"
+                            class="form-control"
+                            placeholder="Exemple : 9ème A"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="classLevel">
+                            Niveau *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="classLevel"
+                            class="form-control"
+                            placeholder="Exemple : 9ème"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="classSection">
+                            Section
+                        </label>
+
+                        <input
+                            type="text"
+                            id="classSection"
+                            class="form-control"
+                            placeholder="Exemple : A"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="closeClassModal()"
+                    >
+                        Annuler
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="saveClassBtn"
+                    >
+                        Enregistrer
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
 
     <script>
@@ -656,10 +907,69 @@
 
 
         // =========================
-        // DONNÉES
+        // VARIABLES
         // =========================
 
         let classes = [];
+
+        let editingClassId = null;
+
+
+        // =========================
+        // MESSAGES
+        // =========================
+
+        function showError(message) {
+
+            const errorBox =
+                document.getElementById(
+                    "errorMessage"
+                );
+
+            const successBox =
+                document.getElementById(
+                    "successMessage"
+                );
+
+            successBox.style.display = "none";
+
+            errorBox.textContent =
+                message || "Une erreur est survenue.";
+
+            errorBox.style.display = "block";
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+        }
+
+
+        function showSuccess(message) {
+
+            const errorBox =
+                document.getElementById(
+                    "errorMessage"
+                );
+
+            const successBox =
+                document.getElementById(
+                    "successMessage"
+                );
+
+            errorBox.style.display = "none";
+
+            successBox.textContent =
+                message || "Opération effectuée avec succès.";
+
+            successBox.style.display = "block";
+
+            setTimeout(() => {
+                successBox.style.display = "none";
+            }, 4000);
+
+        }
 
 
         // =========================
@@ -734,25 +1044,17 @@
                     error
                 );
 
-
-                const errorBox =
-                    document.getElementById(
-                        "errorMessage"
-                    );
-
-                errorBox.textContent =
+                showError(
                     error.message ||
-                    "Impossible de charger les classes.";
-
-                errorBox.style.display =
-                    "block";
+                    "Impossible de charger les classes."
+                );
 
 
                 document.getElementById(
                     "classesTable"
                 ).innerHTML = `
                     <tr>
-                        <td colspan="5" class="empty">
+                        <td colspan="6" class="empty">
                             Impossible de charger les classes.
                         </td>
                     </tr>
@@ -779,7 +1081,7 @@
 
                 table.innerHTML = `
                     <tr>
-                        <td colspan="5" class="empty">
+                        <td colspan="6" class="empty">
                             Aucune classe enregistrée.
                         </td>
                     </tr>
@@ -796,6 +1098,18 @@
                         Number(
                             classe.student_count || 0
                         );
+
+
+                    const badgeClass =
+                        studentCount > 0
+                            ? "badge"
+                            : "badge empty-badge";
+
+
+                    const status =
+                        studentCount > 0
+                            ? "Active"
+                            : "Vide";
 
 
                     return `
@@ -826,11 +1140,33 @@
                             </td>
 
                             <td>
-                                <span class="badge">
-                                    ${studentCount > 0
-                                        ? "Active"
-                                        : "Vide"}
+                                <span class="${badgeClass}">
+                                    ${status}
                                 </span>
+                            </td>
+
+                            <td>
+
+                                <div class="actions">
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-edit"
+                                        onclick="openEditClassModal(${Number(classe.id)})"
+                                    >
+                                        Modifier
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-delete"
+                                        onclick="deleteClass(${Number(classe.id)})"
+                                    >
+                                        Supprimer
+                                    </button>
+
+                                </div>
+
                             </td>
 
                         </tr>
@@ -905,6 +1241,440 @@
 
 
         // =========================
+        // OUVRIR MODAL AJOUT
+        // =========================
+
+        function openAddClassModal() {
+
+            editingClassId = null;
+
+            document.getElementById(
+                "modalTitle"
+            ).textContent =
+                "Ajouter une classe";
+
+            document.getElementById(
+                "saveClassBtn"
+            ).textContent =
+                "Enregistrer";
+
+
+            document.getElementById(
+                "classForm"
+            ).reset();
+
+
+            document.getElementById(
+                "classModal"
+            ).classList.add("show");
+
+
+            setTimeout(() => {
+
+                document.getElementById(
+                    "className"
+                ).focus();
+
+            }, 100);
+
+        }
+
+
+        // =========================
+        // OUVRIR MODAL MODIFICATION
+        // =========================
+
+        function openEditClassModal(id) {
+
+            const classe =
+                classes.find(
+                    item =>
+                        Number(item.id) === Number(id)
+                );
+
+
+            if (!classe) {
+
+                showError(
+                    "Classe introuvable."
+                );
+
+                return;
+            }
+
+
+            editingClassId =
+                Number(id);
+
+
+            document.getElementById(
+                "modalTitle"
+            ).textContent =
+                "Modifier la classe";
+
+
+            document.getElementById(
+                "saveClassBtn"
+            ).textContent =
+                "Enregistrer les modifications";
+
+
+            document.getElementById(
+                "className"
+            ).value =
+                classe.name || "";
+
+
+            document.getElementById(
+                "classLevel"
+            ).value =
+                classe.level || "";
+
+
+            document.getElementById(
+                "classSection"
+            ).value =
+                classe.section || "";
+
+
+            document.getElementById(
+                "classModal"
+            ).classList.add("show");
+
+        }
+
+
+        // =========================
+        // FERMER MODAL
+        // =========================
+
+        function closeClassModal() {
+
+            document.getElementById(
+                "classModal"
+            ).classList.remove("show");
+
+            editingClassId = null;
+
+        }
+
+
+        // =========================
+        // ENREGISTRER CLASSE
+        // =========================
+
+        document
+            .getElementById("classForm")
+            .addEventListener(
+                "submit",
+                async function(event) {
+
+                    event.preventDefault();
+
+
+                    const name =
+                        document
+                            .getElementById("className")
+                            .value
+                            .trim();
+
+
+                    const level =
+                        document
+                            .getElementById("classLevel")
+                            .value
+                            .trim();
+
+
+                    const section =
+                        document
+                            .getElementById("classSection")
+                            .value
+                            .trim();
+
+
+                    if (!name) {
+
+                        showError(
+                            "Le nom de la classe est obligatoire."
+                        );
+
+                        return;
+                    }
+
+
+                    if (!level) {
+
+                        showError(
+                            "Le niveau est obligatoire."
+                        );
+
+                        return;
+                    }
+
+
+                    const button =
+                        document.getElementById(
+                            "saveClassBtn"
+                        );
+
+
+                    button.disabled = true;
+
+                    button.textContent =
+                        editingClassId
+                            ? "Modification..."
+                            : "Enregistrement...";
+
+
+                    try {
+
+                        const url =
+                            editingClassId
+                                ? `/api/classes/${editingClassId}`
+                                : "/api/classes";
+
+
+                        const method =
+                            editingClassId
+                                ? "PUT"
+                                : "POST";
+
+
+                        const response =
+                            await fetch(
+                                url,
+                                {
+                                    method: method,
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json",
+
+                                        "Authorization":
+                                            `Bearer ${token}`
+                                    },
+
+                                    body: JSON.stringify({
+
+                                        name: name,
+
+                                        level: level,
+
+                                        section: section
+
+                                    })
+
+                                }
+                            );
+
+
+                        if (
+                            response.status === 401 ||
+                            response.status === 403
+                        ) {
+
+                            localStorage.removeItem(
+                                "school_token"
+                            );
+
+                            localStorage.removeItem(
+                                "school_user"
+                            );
+
+                            window.location.href = "/";
+
+                            return;
+                        }
+
+
+                        const data =
+                            await response.json();
+
+
+                        if (
+                            !response.ok ||
+                            !data.success
+                        ) {
+
+                            throw new Error(
+                                data.message ||
+                                "Impossible d'enregistrer la classe."
+                            );
+
+                        }
+
+
+                        closeClassModal();
+
+
+                        showSuccess(
+                            editingClassId
+                                ? "Classe modifiée avec succès."
+                                : "Classe ajoutée avec succès."
+                        );
+
+
+                        await loadClasses();
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Erreur enregistrement classe :",
+                            error
+                        );
+
+
+                        showError(
+                            error.message ||
+                            "Impossible d'enregistrer la classe."
+                        );
+
+                    } finally {
+
+                        button.disabled = false;
+
+                        button.textContent =
+                            editingClassId
+                                ? "Enregistrer les modifications"
+                                : "Enregistrer";
+
+                    }
+
+                }
+            );
+
+
+        // =========================
+        // SUPPRIMER CLASSE
+        // =========================
+
+        async function deleteClass(id) {
+
+            const classe =
+                classes.find(
+                    item =>
+                        Number(item.id) === Number(id)
+                );
+
+
+            if (!classe) {
+
+                showError(
+                    "Classe introuvable."
+                );
+
+                return;
+            }
+
+
+            const studentCount =
+                Number(
+                    classe.student_count || 0
+                );
+
+
+            if (studentCount > 0) {
+
+                alert(
+                    "Cette classe contient encore des élèves. Elle ne peut pas être supprimée tant que les élèves y sont associés."
+                );
+
+                return;
+            }
+
+
+            const confirmed =
+                confirm(
+                    `Voulez-vous vraiment supprimer la classe "${classe.name}" ?`
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/classes/${Number(id)}`,
+                        {
+                            method: "DELETE",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${token}`
+                            }
+                        }
+                    );
+
+
+                if (
+                    response.status === 401 ||
+                    response.status === 403
+                ) {
+
+                    localStorage.removeItem(
+                        "school_token"
+                    );
+
+                    localStorage.removeItem(
+                        "school_user"
+                    );
+
+                    window.location.href = "/";
+
+                    return;
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Impossible de supprimer la classe."
+                    );
+
+                }
+
+
+                showSuccess(
+                    "Classe supprimée avec succès."
+                );
+
+
+                await loadClasses();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Erreur suppression classe :",
+                    error
+                );
+
+
+                showError(
+                    error.message ||
+                    "Impossible de supprimer la classe."
+                );
+
+            }
+
+        }
+
+
+        // =========================
         // RECHERCHE
         // =========================
 
@@ -912,7 +1682,7 @@
             .getElementById("searchInput")
             .addEventListener(
                 "input",
-                function () {
+                function() {
 
                     const search =
                         this.value
@@ -954,16 +1724,46 @@
 
 
         // =========================
-        // BOUTON AJOUT
+        // FERMER MODAL EN CLIQUANT
+        // À L'EXTÉRIEUR
         // =========================
 
-        function showComingSoon() {
+        document
+            .getElementById("classModal")
+            .addEventListener(
+                "click",
+                function(event) {
 
-            alert(
-                "Le formulaire d'ajout des classes sera activé lors de la prochaine étape."
+                    if (
+                        event.target === this
+                    ) {
+
+                        closeClassModal();
+
+                    }
+
+                }
             );
 
-        }
+
+        // =========================
+        // FERMER AVEC ESC
+        // =========================
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    closeClassModal();
+
+                }
+
+            }
+        );
 
 
         // =========================
@@ -1012,3 +1812,4 @@
 
 </body>
 </html>
+```
