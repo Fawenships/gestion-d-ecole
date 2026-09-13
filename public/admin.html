@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Tableau de bord — Gestion École</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        .layout {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 245px;
+            background: #111827;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            padding: 24px 15px;
+            z-index: 10;
+        }
+
+        .brand {
+            padding: 5px 12px 30px;
+        }
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .brand-subtitle {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .menu-title {
+            color: #6b7280;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin: 20px 12px 8px;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            color: #d1d5db;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .logout {
+            position: absolute;
+            left: 15px;
+            right: 15px;
+            bottom: 25px;
+        }
+
+        .logout button {
+            width: 100%;
+            border: 1px solid #374151;
+            background: transparent;
+            color: #d1d5db;
+            padding: 11px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .logout button:hover {
+            background: #1f2937;
+        }
+
+        /* MAIN */
+
+        .main {
+            margin-left: 245px;
+            width: calc(100% - 245px);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .user {
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .welcome {
+            margin-bottom: 25px;
+        }
+
+        .welcome h2 {
+            font-size: 25px;
+            margin-bottom: 6px;
+        }
+
+        .welcome p {
+            color: #6b7280;
+        }
+
+        /* CARDS */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid #e7eaf0;
+        }
+
+        .card-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        /* SECTIONS */
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e7eaf0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e7eaf0;
+            font-weight: bold;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 13px 0;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .loading {
+            color: #6b7280;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 1000px) {
+
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 210px;
+            }
+
+            .main {
+                margin-left: 210px;
+                width: calc(100% - 210px);
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+        }
+
+        @media (max-width: 550px) {
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 0 18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-title">
+                Gestion École
+            </div>
+
+            <div class="brand-subtitle">
+                Administration scolaire
+            </div>
+
+        </div>
+
+        <div class="menu-title">
+            Administration
+        </div>
+
+        <nav class="menu">
+
+            <a class="active">
+                Tableau de bord
+            </a>
+
+            <a>
+                Élèves
+            </a>
+
+            <a>
+                Professeurs
+            </a>
+
+            <a>
+                Classes
+            </a>
+
+            <a>
+                Matières
+            </a>
+
+        </nav>
+
+        <div class="menu-title">
+            Scolarité
+        </div>
+
+        <nav class="menu">
+
+            <a>
+                Présences
+            </a>
+
+            <a>
+                Notes
+            </a>
+
+            <a>
+                Emploi du temps
+            </a>
+
+            <a>
+                Paiements
+            </a>
+
+            <a>
+                Bulletins
+            </a>
+
+        </nav>
+
+        <div class="logout">
+
+            <button onclick="logout()">
+                Se déconnecter
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div class="page-title">
+                Tableau de bord
+            </div>
+
+            <div class="user" id="userName">
+                Administrateur
+            </div>
+
+        </header>
+
+
+        <section class="content">
+
+            <div class="welcome">
+
+                <h2>
+                    Tableau de bord
+                </h2>
+
+                <p>
+                    Vue générale de votre établissement scolaire.
+                </p>
+
+            </div>
+
+
+            <div class="cards">
+
+                <div class="card">
+
+                    <div class="card-label">
+                        Élèves
+                    </div>
+
+                    <div
+                        class="card-value"
+                        id="studentsCount"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-label">
+                        Professeurs
+                    </div>
+
+                    <div
+                        class="card-value"
+                        id="teachersCount"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-label">
+                        Classes
+                    </div>
+
+                    <div
+                        class="card-value"
+                        id="classesCount"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-label">
+                        Matières
+                    </div>
+
+                    <div
+                        class="card-value"
+                        id="subjectsCount"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="grid">
+
+                <div class="panel">
+
+                    <div class="panel-header">
+                        Présence des professeurs
+                    </div>
+
+                    <div class="panel-body">
+
+                        <div class="stat-row">
+
+                            <span>
+                                Présents
+                            </span>
+
+                            <span
+                                class="status"
+                                id="presentTeachers"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+
+                        <div class="stat-row">
+
+                            <span>
+                                En retard
+                            </span>
+
+                            <span
+                                class="status"
+                                id="lateTeachers"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-header">
+                        État du système
+                    </div>
+
+                    <div class="panel-body">
+
+                        <div class="stat-row">
+
+                            <span>
+                                Serveur
+                            </span>
+
+                            <span class="status">
+                                Connecté
+                            </span>
+
+                        </div>
+
+
+                        <div class="stat-row">
+
+                            <span>
+                                Base de données
+                            </span>
+
+                            <span
+                                class="status"
+                                id="databaseStatus"
+                            >
+                                Vérification...
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script>
+
+const token = localStorage.getItem("school_token");
+
+if (!token) {
+    window.location.href = "/";
+}
+
+const storedUser = localStorage.getItem("school_user");
+
+if (storedUser) {
+
+    try {
+
+        const user = JSON.parse(storedUser);
+
+        document.getElementById("userName").textContent =
+            `${user.first_name} ${user.last_name}`;
+
+    } catch (error) {
+        console.error(error);
+    }
+
+}
+
+
+async function loadDashboard() {
+
+    try {
+
+        const response = await fetch(
+            "/api/dashboard",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401 ||
+            response.status === 403) {
+
+            logout();
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message);
+        }
+
+        const dashboard = data.dashboard;
+
+        document.getElementById("studentsCount")
+            .textContent = dashboard.students;
+
+        document.getElementById("teachersCount")
+            .textContent = dashboard.teachers;
+
+        document.getElementById("classesCount")
+            .textContent = dashboard.classes;
+
+        document.getElementById("subjectsCount")
+            .textContent = dashboard.subjects;
+
+        document.getElementById("presentTeachers")
+            .textContent = dashboard.presentTeachers;
+
+        document.getElementById("lateTeachers")
+            .textContent = dashboard.lateTeachers;
+
+        document.getElementById("databaseStatus")
+            .textContent = "Connectée";
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("databaseStatus")
+            .textContent = "Erreur";
+
+    }
+
+}
+
+
+function logout() {
+
+    localStorage.removeItem("school_token");
+    localStorage.removeItem("school_user");
+
+    window.location.href = "/";
+
+}
+
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>
