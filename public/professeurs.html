@@ -19,10 +19,6 @@
             color: #172033;
         }
 
-        /* =========================
-           SIDEBAR
-        ========================= */
-
         .sidebar {
             position: fixed;
             left: 0;
@@ -32,6 +28,7 @@
             background: #111827;
             color: white;
             padding: 25px 15px;
+            overflow-y: auto;
         }
 
         .logo {
@@ -68,10 +65,6 @@
             background: #2563eb;
             color: white;
         }
-
-        /* =========================
-           MAIN
-        ========================= */
 
         .main {
             margin-left: 250px;
@@ -114,10 +107,6 @@
             padding: 35px;
         }
 
-        /* =========================
-           HEADER
-        ========================= */
-
         .page-header {
             display: flex;
             align-items: center;
@@ -137,7 +126,7 @@
         .btn {
             border: none;
             border-radius: 8px;
-            padding: 12px 20px;
+            padding: 11px 17px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
@@ -152,9 +141,33 @@
             background: #1d4ed8;
         }
 
-        /* =========================
-           STATISTICS
-        ========================= */
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-edit {
+            background: #eff6ff;
+            color: #1d4ed8;
+            margin-right: 5px;
+        }
+
+        .btn-edit:hover {
+            background: #dbeafe;
+        }
+
+        .btn-delete {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .btn-delete:hover {
+            background: #fee2e2;
+        }
 
         .stats {
             display: grid;
@@ -179,10 +192,6 @@
         .stat-card h3 {
             font-size: 28px;
         }
-
-        /* =========================
-           TABLE
-        ========================= */
 
         .table-container {
             background: white;
@@ -249,39 +258,151 @@
             font-weight: 600;
         }
 
+        .badge-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         .empty {
             text-align: center;
             padding: 50px 20px;
             color: #6b7280;
         }
 
-        /* =========================
-           ERROR
-        ========================= */
-
-        .error-message {
+        .error-message,
+        .success-message {
             display: none;
-            background: #fee2e2;
-            color: #991b1b;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
 
-        /* =========================
-           RESPONSIVE
-        ========================= */
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* MODAL */
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 14px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 22px 25px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+        }
+
+        .close-btn {
+            border: none;
+            background: transparent;
+            font-size: 26px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 7px;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #2563eb;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .checkbox-row input {
+            width: auto;
+        }
+
+        .modal-footer {
+            padding: 18px 25px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
 
         @media (max-width: 1000px) {
-
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
-
         }
 
         @media (max-width: 750px) {
-
             .sidebar {
                 width: 210px;
             }
@@ -309,10 +430,16 @@
                 width: 100%;
             }
 
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
         }
 
         @media (max-width: 600px) {
-
             .sidebar {
                 display: none;
             }
@@ -338,710 +465,1450 @@
             }
 
             table {
-                min-width: 850px;
+                min-width: 1100px;
             }
-
         }
     </style>
 </head>
 
 <body>
 
-    <!-- =========================
-         SIDEBAR
-    ========================= -->
+<aside class="sidebar">
 
-    <aside class="sidebar">
+    <div class="logo">
+        Gestion <span>École</span>
+    </div>
 
-        <div class="logo">
-            Gestion <span>École</span>
+    <ul class="menu">
+
+        <li><a href="/admin.html">Tableau de bord</a></li>
+
+        <li><a href="/eleves.html">Élèves</a></li>
+
+        <li><a href="/professeurs.html" class="active">Professeurs</a></li>
+
+        <li><a href="/classes.html">Classes</a></li>
+
+        <li><a href="/matieres.html">Matières</a></li>
+
+        <li><a href="/presence.html">Présences</a></li>
+
+        <li><a href="/notes.html">Notes</a></li>
+
+        <li><a href="/emploi-du-temps.html">Emploi du temps</a></li>
+
+        <li><a href="/paiements.html">Paiements</a></li>
+
+        <li><a href="/bulletins.html">Bulletins</a></li>
+
+    </ul>
+
+</aside>
+
+
+<main class="main">
+
+    <header class="topbar">
+
+        <h1>Gestion des professeurs</h1>
+
+        <div class="user">
+
+            <strong id="userName">Administrateur</strong>
+
+            <div class="user-avatar" id="userAvatar">A</div>
+
         </div>
 
-        <ul class="menu">
-
-            <li>
-                <a href="/admin.html">
-                    Tableau de bord
-                </a>
-            </li>
-
-            <li>
-                <a href="/eleves.html">
-                    Élèves
-                </a>
-            </li>
-
-            <li>
-                <a href="/professeurs.html" class="active">
-                    Professeurs
-                </a>
-            </li>
-
-            <li>
-                <a href="/classes.html">
-                    Classes
-                </a>
-            </li>
-
-            <li>
-                <a href="/matieres.html">
-                    Matières
-                </a>
-            </li>
-
-            <li>
-                <a href="/presence.html">
-                    Présences
-                </a>
-            </li>
-
-            <li>
-                <a href="/notes.html">
-                    Notes
-                </a>
-            </li>
-
-            <li>
-                <a href="/emploi-du-temps.html">
-                    Emploi du temps
-                </a>
-            </li>
-
-            <li>
-                <a href="/paiements.html">
-                    Paiements
-                </a>
-            </li>
-
-            <li>
-                <a href="/bulletins.html">
-                    Bulletins
-                </a>
-            </li>
-
-        </ul>
-
-    </aside>
+    </header>
 
 
-    <!-- =========================
-         MAIN
-    ========================= -->
+    <section class="content">
 
-    <main class="main">
+        <div class="page-header">
 
-        <header class="topbar">
+            <div>
 
-            <h1>Gestion des professeurs</h1>
+                <h2>Professeurs</h2>
 
-            <div class="user">
+                <p>
+                    Consultez et gérez le personnel enseignant
+                    de votre établissement.
+                </p>
 
-                <strong id="userName">
-                    Administrateur
-                </strong>
+            </div>
 
-                <div
-                    class="user-avatar"
-                    id="userAvatar"
+            <button
+                class="btn btn-primary"
+                onclick="openAddModal()"
+            >
+                + Ajouter un professeur
+            </button>
+
+        </div>
+
+
+        <div
+            class="error-message"
+            id="errorMessage"
+        ></div>
+
+        <div
+            class="success-message"
+            id="successMessage"
+        ></div>
+
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <p>Total des professeurs</p>
+
+                <h3 id="totalTeachers">0</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <p>Avec email</p>
+
+                <h3 id="teachersWithEmail">0</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <p>Avec téléphone</p>
+
+                <h3 id="teachersWithPhone">0</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <p>Spécialisations</p>
+
+                <h3 id="specializations">0</h3>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-container">
+
+            <div class="table-header">
+
+                <h3>Liste des professeurs</h3>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="search"
+                    placeholder="Rechercher un professeur..."
                 >
-                    A
+
+            </div>
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Numéro</th>
+
+                        <th>Nom</th>
+
+                        <th>Prénom</th>
+
+                        <th>Email</th>
+
+                        <th>Téléphone</th>
+
+                        <th>Spécialisation</th>
+
+                        <th>Statut</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="teachersTable">
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="empty"
+                        >
+                            Chargement des professeurs...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     MODAL PROFESSEUR
+========================= -->
+
+<div
+    class="modal-overlay"
+    id="teacherModal"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle">
+                Ajouter un professeur
+            </h2>
+
+            <button
+                class="close-btn"
+                onclick="closeModal()"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="teacherForm">
+
+            <div class="modal-body">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="first_name">
+                            Prénom *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="first_name"
+                            name="first_name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="last_name">
+                            Nom *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="last_name"
+                            name="last_name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="phone">
+                            Téléphone
+                        </label>
+
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label for="address">
+                            Adresse
+                        </label>
+
+                        <input
+                            type="text"
+                            id="address"
+                            name="address"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="specialization">
+                            Spécialisation
+                        </label>
+
+                        <input
+                            type="text"
+                            id="specialization"
+                            name="specialization"
+                            placeholder="Ex. Mathématiques"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="hire_date">
+                            Date d'embauche
+                        </label>
+
+                        <input
+                            type="date"
+                            id="hire_date"
+                            name="hire_date"
+                        >
+
+                    </div>
+
+
+                    <div
+                        class="form-group full"
+                        id="activeGroup"
+                    >
+
+                        <label>Statut</label>
+
+                        <label class="checkbox-row">
+
+                            <input
+                                type="checkbox"
+                                id="active"
+                                checked
+                            >
+
+                            Professeur actif
+
+                        </label>
+
+                    </div>
+
                 </div>
 
             </div>
 
-        </header>
 
-
-        <section class="content">
-
-            <!-- HEADER -->
-
-            <div class="page-header">
-
-                <div>
-
-                    <h2>Professeurs</h2>
-
-                    <p>
-                        Consultez et gérez le personnel enseignant
-                        de votre établissement.
-                    </p>
-
-                </div>
+            <div class="modal-footer">
 
                 <button
-                    class="btn btn-primary"
-                    onclick="showComingSoon()"
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="closeModal()"
                 >
-                    + Ajouter un professeur
+                    Annuler
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    id="submitButton"
+                >
+                    Ajouter
                 </button>
 
             </div>
 
+        </form>
 
-            <!-- ERROR -->
+    </div>
 
-            <div
-                class="error-message"
-                id="errorMessage"
-            ></div>
+</div>
 
 
-            <!-- STATISTICS -->
+<script>
 
-            <div class="stats">
+    // =========================
+    // AUTHENTIFICATION
+    // =========================
 
-                <div class="stat-card">
+    const token =
+        localStorage.getItem("school_token");
 
-                    <p>Total des professeurs</p>
+    if (!token) {
 
-                    <h3 id="totalTeachers">
-                        0
-                    </h3>
+        window.location.href = "/";
 
-                </div>
-
-
-                <div class="stat-card">
-
-                    <p>Avec email</p>
-
-                    <h3 id="teachersWithEmail">
-                        0
-                    </h3>
-
-                </div>
+    }
 
 
-                <div class="stat-card">
+    // =========================
+    // UTILISATEUR
+    // =========================
 
-                    <p>Avec téléphone</p>
+    try {
 
-                    <h3 id="teachersWithPhone">
-                        0
-                    </h3>
+        const user =
+            JSON.parse(
+                localStorage.getItem("school_user") || "{}"
+            );
 
-                </div>
+        const fullName =
+            `${user.first_name || ""} ${user.last_name || ""}`
+            .trim();
 
+        if (fullName) {
 
-                <div class="stat-card">
+            document.getElementById(
+                "userName"
+            ).textContent = fullName;
 
-                    <p>Spécialisations</p>
-
-                    <h3 id="specializations">
-                        0
-                    </h3>
-
-                </div>
-
-            </div>
-
-
-            <!-- TABLE -->
-
-            <div class="table-container">
-
-                <div class="table-header">
-
-                    <h3>
-                        Liste des professeurs
-                    </h3>
-
-                    <input
-                        type="text"
-                        id="searchInput"
-                        class="search"
-                        placeholder="Rechercher un professeur..."
-                    >
-
-                </div>
-
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Numéro
-                            </th>
-
-                            <th>
-                                Nom
-                            </th>
-
-                            <th>
-                                Prénom
-                            </th>
-
-                            <th>
-                                Email
-                            </th>
-
-                            <th>
-                                Téléphone
-                            </th>
-
-                            <th>
-                                Spécialisation
-                            </th>
-
-                            <th>
-                                Statut
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody id="teachersTable">
-
-                        <tr>
-
-                            <td
-                                colspan="7"
-                                class="empty"
-                            >
-                                Chargement des professeurs...
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <script>
-
-        // =========================
-        // AUTHENTIFICATION
-        // =========================
-
-        const token =
-            localStorage.getItem("school_token");
-
-        if (!token) {
-
-            window.location.href = "/";
+            document.getElementById(
+                "userAvatar"
+            ).textContent =
+                (user.first_name || "A")
+                .charAt(0)
+                .toUpperCase();
 
         }
 
+    } catch (error) {
 
-        // =========================
-        // UTILISATEUR
-        // =========================
+        console.error(
+            "Erreur utilisateur :",
+            error
+        );
+
+    }
+
+
+    // =========================
+    // VARIABLES
+    // =========================
+
+    let teachers = [];
+
+    let editingTeacherId = null;
+
+
+    // =========================
+    // CHARGER LES PROFESSEURS
+    // =========================
+
+    async function loadTeachers() {
+
+        hideMessages();
 
         try {
 
-            const user =
-                JSON.parse(
-                    localStorage.getItem("school_user") || "{}"
+            const response =
+                await fetch(
+                    "/api/teachers",
+                    {
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
                 );
 
-            const fullName =
-                `${user.first_name || ""} ${user.last_name || ""}`
-                .trim();
 
-            if (fullName) {
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
 
-                document.getElementById(
-                    "userName"
-                ).textContent = fullName;
+                localStorage.removeItem(
+                    "school_token"
+                );
 
-                document.getElementById(
-                    "userAvatar"
-                ).textContent =
-                    (user.first_name || "A")
-                    .charAt(0)
-                    .toUpperCase();
+                localStorage.removeItem(
+                    "school_user"
+                );
+
+                window.location.href = "/";
+
+                return;
 
             }
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Impossible de charger les professeurs."
+                );
+
+            }
+
+
+            teachers =
+                data.teachers || [];
+
+
+            displayTeachers(
+                teachers
+            );
+
+            updateStatistics(
+                teachers
+            );
+
 
         } catch (error) {
 
             console.error(
-                "Erreur utilisateur :",
+                "Erreur professeurs :",
                 error
             );
+
+            showError(
+                error.message ||
+                "Impossible de charger les professeurs."
+            );
+
+
+            document.getElementById(
+                "teachersTable"
+            ).innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty">
+                        Impossible de charger les professeurs.
+                    </td>
+                </tr>
+            `;
+
+        }
+
+    }
+
+
+    // =========================
+    // AFFICHAGE
+    // =========================
+
+    function displayTeachers(list) {
+
+        const table =
+            document.getElementById(
+                "teachersTable"
+            );
+
+
+        if (!list.length) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty">
+                        Aucun professeur enregistré.
+                    </td>
+                </tr>
+            `;
+
+            return;
 
         }
 
 
-        // =========================
-        // DONNÉES
-        // =========================
+        table.innerHTML =
+            list.map(teacher => {
 
-        let teachers = [];
+                const active =
+                    teacher.active !== false;
 
 
-        // =========================
-        // CHARGER LES PROFESSEURS
-        // =========================
+                return `
+                    <tr>
 
-        async function loadTeachers() {
+                        <td>
+                            ${escapeHtml(
+                                teacher.teacher_number || "—"
+                            )}
+                        </td>
 
-            try {
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    teacher.last_name || "—"
+                                )}
+                            </strong>
+                        </td>
 
-                const response =
-                    await fetch(
-                        "/api/teachers",
-                        {
-                            headers: {
-                                "Authorization":
-                                    `Bearer ${token}`
-                            }
+                        <td>
+                            ${escapeHtml(
+                                teacher.first_name || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                teacher.email || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                teacher.phone || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                teacher.specialization || "—"
+                            )}
+                        </td>
+
+                        <td>
+
+                            <span class="badge ${active ? "" : "badge-inactive"}">
+                                ${active ? "Actif" : "Inactif"}
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button
+                                class="btn btn-edit"
+                                onclick="openEditModal(${Number(teacher.id)})"
+                                type="button"
+                            >
+                                Modifier
+                            </button>
+
+                            <button
+                                class="btn btn-delete"
+                                onclick="deleteTeacher(${Number(teacher.id)})"
+                                type="button"
+                            >
+                                Supprimer
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `;
+
+            }).join("");
+
+    }
+
+
+    // =========================
+    // STATISTIQUES
+    // =========================
+
+    function updateStatistics(list) {
+
+        document.getElementById(
+            "totalTeachers"
+        ).textContent =
+            list.length;
+
+
+        const withEmail =
+            list.filter(
+                teacher =>
+                    teacher.email &&
+                    String(teacher.email).trim() !== ""
+            ).length;
+
+
+        const withPhone =
+            list.filter(
+                teacher =>
+                    teacher.phone &&
+                    String(teacher.phone).trim() !== ""
+            ).length;
+
+
+        const specializationSet =
+            new Set(
+                list
+                    .map(
+                        teacher =>
+                            teacher.specialization
+                    )
+                    .filter(
+                        value =>
+                            value &&
+                            String(value).trim() !== ""
+                    )
+            );
+
+
+        document.getElementById(
+            "teachersWithEmail"
+        ).textContent =
+            withEmail;
+
+
+        document.getElementById(
+            "teachersWithPhone"
+        ).textContent =
+            withPhone;
+
+
+        document.getElementById(
+            "specializations"
+        ).textContent =
+            specializationSet.size;
+
+    }
+
+
+    // =========================
+    // RECHERCHE
+    // =========================
+
+    document
+        .getElementById("searchInput")
+        .addEventListener(
+            "input",
+            function () {
+
+                const search =
+                    this.value
+                        .toLowerCase()
+                        .trim();
+
+
+                const filtered =
+                    teachers.filter(
+                        teacher => {
+
+                            return [
+
+                                teacher.teacher_number,
+                                teacher.first_name,
+                                teacher.last_name,
+                                teacher.email,
+                                teacher.phone,
+                                teacher.address,
+                                teacher.specialization
+
+                            ]
+                            .filter(Boolean)
+                            .some(
+                                value =>
+                                    String(value)
+                                        .toLowerCase()
+                                        .includes(search)
+                            );
+
                         }
                     );
 
 
-                if (
-                    response.status === 401 ||
-                    response.status === 403
-                ) {
-
-                    localStorage.removeItem(
-                        "school_token"
-                    );
-
-                    localStorage.removeItem(
-                        "school_user"
-                    );
-
-                    window.location.href = "/";
-
-                    return;
-                }
-
-
-                const data =
-                    await response.json();
-
-
-                if (
-                    !response.ok ||
-                    !data.success
-                ) {
-
-                    throw new Error(
-                        data.message ||
-                        "Impossible de charger les professeurs."
-                    );
-
-                }
-
-
-                teachers =
-                    data.teachers || [];
-
-
-                displayTeachers(teachers);
-
-                updateStatistics(teachers);
-
-
-            } catch (error) {
-
-                console.error(
-                    "Erreur professeurs :",
-                    error
+                displayTeachers(
+                    filtered
                 );
 
+            }
+        );
 
-                const errorBox =
+
+    // =========================
+    // OUVRIR AJOUT
+    // =========================
+
+    function openAddModal() {
+
+        editingTeacherId = null;
+
+        document.getElementById(
+            "modalTitle"
+        ).textContent =
+            "Ajouter un professeur";
+
+        document.getElementById(
+            "submitButton"
+        ).textContent =
+            "Ajouter";
+
+        document.getElementById(
+            "teacherForm"
+        ).reset();
+
+        document.getElementById(
+            "active"
+        ).checked = true;
+
+        document.getElementById(
+            "activeGroup"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "teacherModal"
+        ).style.display =
+            "flex";
+
+    }
+
+
+    // =========================
+    // OUVRIR MODIFICATION
+    // =========================
+
+    function openEditModal(id) {
+
+        const teacher =
+            teachers.find(
+                item =>
+                    Number(item.id) === Number(id)
+            );
+
+
+        if (!teacher) {
+
+            showError(
+                "Professeur introuvable."
+            );
+
+            return;
+
+        }
+
+
+        editingTeacherId =
+            Number(id);
+
+
+        document.getElementById(
+            "modalTitle"
+        ).textContent =
+            "Modifier le professeur";
+
+
+        document.getElementById(
+            "submitButton"
+        ).textContent =
+            "Enregistrer";
+
+
+        document.getElementById(
+            "first_name"
+        ).value =
+            teacher.first_name || "";
+
+
+        document.getElementById(
+            "last_name"
+        ).value =
+            teacher.last_name || "";
+
+
+        document.getElementById(
+            "email"
+        ).value =
+            teacher.email || "";
+
+
+        document.getElementById(
+            "phone"
+        ).value =
+            teacher.phone || "";
+
+
+        document.getElementById(
+            "address"
+        ).value =
+            teacher.address || "";
+
+
+        document.getElementById(
+            "specialization"
+        ).value =
+            teacher.specialization || "";
+
+
+        document.getElementById(
+            "hire_date"
+        ).value =
+            formatDateForInput(
+                teacher.hire_date
+            );
+
+
+        document.getElementById(
+            "active"
+        ).checked =
+            teacher.active !== false;
+
+
+        document.getElementById(
+            "activeGroup"
+        ).style.display =
+            "block";
+
+
+        document.getElementById(
+            "teacherModal"
+        ).style.display =
+            "flex";
+
+    }
+
+
+    // =========================
+    // FERMER MODAL
+    // =========================
+
+    function closeModal() {
+
+        document.getElementById(
+            "teacherModal"
+        ).style.display =
+            "none";
+
+        editingTeacherId = null;
+
+    }
+
+
+    document
+        .getElementById("teacherModal")
+        .addEventListener(
+            "click",
+            function(event) {
+
+                if (
+                    event.target === this
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+    // =========================
+    // AJOUT / MODIFICATION
+    // =========================
+
+    document
+        .getElementById("teacherForm")
+        .addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+                hideMessages();
+
+
+                const submitButton =
                     document.getElementById(
-                        "errorMessage"
+                        "submitButton"
                     );
 
-                errorBox.textContent =
-                    error.message ||
-                    "Impossible de charger les professeurs.";
 
-                errorBox.style.display =
-                    "block";
+                const originalText =
+                    submitButton.textContent;
 
 
-                document.getElementById(
-                    "teachersTable"
-                ).innerHTML = `
-                    <tr>
-                        <td colspan="7" class="empty">
-                            Impossible de charger les professeurs.
-                        </td>
-                    </tr>
-                `;
+                submitButton.disabled = true;
 
-            }
-
-        }
+                submitButton.textContent =
+                    "Enregistrement...";
 
 
-        // =========================
-        // AFFICHER LES PROFESSEURS
-        // =========================
+                const payload = {
 
-        function displayTeachers(list) {
+                    first_name:
+                        document.getElementById(
+                            "first_name"
+                        ).value.trim(),
 
-            const table =
-                document.getElementById(
-                    "teachersTable"
-                );
+                    last_name:
+                        document.getElementById(
+                            "last_name"
+                        ).value.trim(),
 
+                    email:
+                        document.getElementById(
+                            "email"
+                        ).value.trim(),
 
-            if (!list.length) {
+                    phone:
+                        document.getElementById(
+                            "phone"
+                        ).value.trim(),
 
-                table.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="empty">
-                            Aucun professeur enregistré.
-                        </td>
-                    </tr>
-                `;
+                    address:
+                        document.getElementById(
+                            "address"
+                        ).value.trim(),
 
-                return;
-            }
+                    specialization:
+                        document.getElementById(
+                            "specialization"
+                        ).value.trim(),
 
+                    hire_date:
+                        document.getElementById(
+                            "hire_date"
+                        ).value || null
 
-            table.innerHTML =
-                list.map(teacher => {
-
-                    return `
-                        <tr>
-
-                            <td>
-                                ${escapeHtml(
-                                    teacher.teacher_number || "—"
-                                )}
-                            </td>
-
-                            <td>
-                                <strong>
-                                    ${escapeHtml(
-                                        teacher.last_name || "—"
-                                    )}
-                                </strong>
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    teacher.first_name || "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    teacher.email || "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    teacher.phone || "—"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    teacher.specialization || "—"
-                                )}
-                            </td>
-
-                            <td>
-                                <span class="badge">
-                                    Actif
-                                </span>
-                            </td>
-
-                        </tr>
-                    `;
-
-                }).join("");
-
-        }
+                };
 
 
-        // =========================
-        // STATISTIQUES
-        // =========================
+                if (
+                    editingTeacherId !== null
+                ) {
 
-        function updateStatistics(list) {
+                    payload.active =
+                        document.getElementById(
+                            "active"
+                        ).checked;
 
-            document.getElementById(
-                "totalTeachers"
-            ).textContent =
-                list.length;
-
-
-            const withEmail =
-                list.filter(
-                    teacher =>
-                        teacher.email &&
-                        String(teacher.email).trim() !== ""
-                ).length;
+                }
 
 
-            const withPhone =
-                list.filter(
-                    teacher =>
-                        teacher.phone &&
-                        String(teacher.phone).trim() !== ""
-                ).length;
+                try {
+
+                    const url =
+                        editingTeacherId === null
+                            ? "/api/teachers"
+                            : `/api/teachers/${editingTeacherId}`;
 
 
-            const specializationSet =
-                new Set(
-                    list
-                        .map(
-                            teacher =>
-                                teacher.specialization
-                        )
-                        .filter(
-                            value =>
-                                value &&
-                                String(value).trim() !== ""
-                        )
-                );
+                    const method =
+                        editingTeacherId === null
+                            ? "POST"
+                            : "PUT";
 
 
-            document.getElementById(
-                "teachersWithEmail"
-            ).textContent =
-                withEmail;
-
-
-            document.getElementById(
-                "teachersWithPhone"
-            ).textContent =
-                withPhone;
-
-
-            document.getElementById(
-                "specializations"
-            ).textContent =
-                specializationSet.size;
-
-        }
-
-
-        // =========================
-        // RECHERCHE
-        // =========================
-
-        document
-            .getElementById("searchInput")
-            .addEventListener(
-                "input",
-                function () {
-
-                    const search =
-                        this.value
-                            .toLowerCase()
-                            .trim();
-
-
-                    const filtered =
-                        teachers.filter(
-                            teacher => {
-
-                                return [
-
-                                    teacher.teacher_number,
-
-                                    teacher.first_name,
-
-                                    teacher.last_name,
-
-                                    teacher.email,
-
-                                    teacher.phone,
-
-                                    teacher.specialization
-
-                                ]
-                                .filter(Boolean)
-                                .some(
-                                    value =>
-                                        String(value)
-                                            .toLowerCase()
-                                            .includes(search)
-                                );
-
+                    const response =
+                        await fetch(
+                            url,
+                            {
+                                method,
+                                headers: {
+                                    "Content-Type":
+                                        "application/json",
+                                    "Authorization":
+                                        `Bearer ${token}`
+                                },
+                                body:
+                                    JSON.stringify(
+                                        payload
+                                    )
                             }
                         );
 
 
-                    displayTeachers(
-                        filtered
+                    if (
+                        response.status === 401 ||
+                        response.status === 403
+                    ) {
+
+                        localStorage.removeItem(
+                            "school_token"
+                        );
+
+                        localStorage.removeItem(
+                            "school_user"
+                        );
+
+                        window.location.href = "/";
+
+                        return;
+
+                    }
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (
+                        !response.ok ||
+                        !data.success
+                    ) {
+
+                        throw new Error(
+                            data.message ||
+                            "Une erreur est survenue."
+                        );
+
+                    }
+
+
+                    closeModal();
+
+
+                    showSuccess(
+                        data.message ||
+                        (
+                            editingTeacherId === null
+                                ? "Professeur ajouté avec succès."
+                                : "Professeur modifié avec succès."
+                        )
                     );
 
+
+                    await loadTeachers();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Erreur enregistrement professeur :",
+                        error
+                    );
+
+
+                    showError(
+                        error.message ||
+                        "Impossible d'enregistrer le professeur."
+                    );
+
+                } finally {
+
+                    submitButton.disabled = false;
+
+                    submitButton.textContent =
+                        originalText;
+
                 }
+
+            }
+        );
+
+
+    // =========================
+    // SUPPRIMER
+    // =========================
+
+    async function deleteTeacher(id) {
+
+        const teacher =
+            teachers.find(
+                item =>
+                    Number(item.id) === Number(id)
             );
 
 
-        // =========================
-        // BOUTON AJOUT
-        // =========================
+        if (!teacher) {
 
-        function showComingSoon() {
-
-            alert(
-                "Le formulaire d'ajout des professeurs sera activé lors de la prochaine étape."
+            showError(
+                "Professeur introuvable."
             );
+
+            return;
 
         }
 
 
-        // =========================
-        // PROTECTION HTML
-        // =========================
+        const fullName =
+            `${teacher.first_name || ""} ${teacher.last_name || ""}`
+            .trim();
 
-        function escapeHtml(value) {
 
-            return String(value)
+        const confirmed =
+            confirm(
+                `Voulez-vous vraiment supprimer le professeur ${fullName} ?\n\nCette action est irréversible.`
+            );
 
-                .replace(
-                    /&/g,
-                    "&amp;"
-                )
 
-                .replace(
-                    /</g,
-                    "&lt;"
-                )
+        if (!confirmed) {
 
-                .replace(
-                    />/g,
-                    "&gt;"
-                )
+            return;
 
-                .replace(
-                    /"/g,
-                    "&quot;"
-                )
+        }
 
-                .replace(
-                    /'/g,
-                    "&#039;"
+
+        hideMessages();
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/teachers/${Number(id)}`,
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
                 );
 
+
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
+
+                localStorage.removeItem(
+                    "school_token"
+                );
+
+                localStorage.removeItem(
+                    "school_user"
+                );
+
+                window.location.href = "/";
+
+                return;
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Impossible de supprimer le professeur."
+                );
+
+            }
+
+
+            showSuccess(
+                data.message ||
+                "Professeur supprimé avec succès."
+            );
+
+
+            await loadTeachers();
+
+
+        } catch (error) {
+
+            console.error(
+                "Erreur suppression professeur :",
+                error
+            );
+
+
+            showError(
+                error.message ||
+                "Impossible de supprimer le professeur."
+            );
+
+        }
+
+    }
+
+
+    // =========================
+    // MESSAGES
+    // =========================
+
+    function showError(message) {
+
+        const box =
+            document.getElementById(
+                "errorMessage"
+            );
+
+        box.textContent =
+            message;
+
+        box.style.display =
+            "block";
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    function showSuccess(message) {
+
+        const box =
+            document.getElementById(
+                "successMessage"
+            );
+
+        box.textContent =
+            message;
+
+        box.style.display =
+            "block";
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+
+        setTimeout(
+            () => {
+                box.style.display =
+                    "none";
+            },
+            4000
+        );
+
+    }
+
+
+    function hideMessages() {
+
+        document.getElementById(
+            "errorMessage"
+        ).style.display =
+            "none";
+
+        document.getElementById(
+            "successMessage"
+        ).style.display =
+            "none";
+
+    }
+
+
+    // =========================
+    // DATE
+    // =========================
+
+    function formatDateForInput(value) {
+
+        if (!value) {
+            return "";
         }
 
 
-        // =========================
-        // INITIALISATION
-        // =========================
+        const stringValue =
+            String(value);
 
-        loadTeachers();
 
-    </script>
+        if (
+            /^\d{4}-\d{2}-\d{2}$/.test(
+                stringValue
+            )
+        ) {
+
+            return stringValue;
+
+        }
+
+
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return "";
+
+        }
+
+
+        return date
+            .toISOString()
+            .slice(0, 10);
+
+    }
+
+
+    // =========================
+    // PROTECTION HTML
+    // =========================
+
+    function escapeHtml(value) {
+
+        return String(value)
+
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+
+            .replace(
+                /</g,
+                "&lt;"
+            )
+
+            .replace(
+                />/g,
+                "&gt;"
+            )
+
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+
+    }
+
+
+    // =========================
+    // INITIALISATION
+    // =========================
+
+    loadTeachers();
+
+</script>
 
 </body>
 </html>
