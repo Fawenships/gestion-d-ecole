@@ -187,22 +187,23 @@ app.post("/api/login", async (req, res) => {
 
         }
 
-        const result = await pool.query(
-            `
-            SELECT
-                id,
-                school_id,
-                first_name,
-                last_name,
-                email,
-                password_hash,
-                role
-            FROM users
-            WHERE LOWER(email) = LOWER($1)
-            LIMIT 1
-            `,
-            [email.trim()]
-        );
+        const result =
+            await pool.query(
+                `
+                SELECT
+                    id,
+                    school_id,
+                    first_name,
+                    last_name,
+                    email,
+                    password_hash,
+                    role
+                FROM users
+                WHERE LOWER(email) = LOWER($1)
+                LIMIT 1
+                `,
+                [email.trim()]
+            );
 
         if (result.rows.length === 0) {
 
@@ -711,6 +712,41 @@ app.put(
 
             }
 
+            if (!class_id) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "La classe est requise."
+                });
+
+            }
+
+            const classCheck =
+                await pool.query(
+                    `
+                    SELECT id
+                    FROM classes
+                    WHERE id = $1
+                    AND school_id = $2
+                    LIMIT 1
+                    `,
+                    [
+                        class_id,
+                        req.user.school_id
+                    ]
+                );
+
+            if (classCheck.rows.length === 0) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Classe introuvable."
+                });
+
+            }
+
             const result =
                 await pool.query(
                     `
@@ -944,7 +980,7 @@ app.get(
 );
 
 /* =========================================================
-   CLASSES — AVEC NOMBRE AUTOMATIQUE D'ÉLÈVES
+   CLASSES — LECTURE AVEC NOMBRE D'ÉLÈVES
 ========================================================= */
 
 app.get(
@@ -961,15 +997,11 @@ app.get(
                         c.*,
                         COUNT(s.id)::INTEGER AS student_count
                     FROM classes c
-
                     LEFT JOIN students s
                         ON s.class_id = c.id
                         AND s.school_id = c.school_id
-
                     WHERE c.school_id = $1
-
                     GROUP BY c.id
-
                     ORDER BY c.name ASC
                     `,
                     [req.user.school_id]
@@ -992,6 +1024,505 @@ app.get(
                 success: false,
                 message:
                     "Impossible de charger les classes."
+            });
+
+        }
+
+    }
+);
+
+/* =========================================================
+   CLASSES — ÉLÈVES D'UNE CLASSE
+========================================================= */
+
+app.get(
+    "/api/classes/:id/students",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const classId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(classId)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Identifiant de classe invalide."
+                });
+
+            }
+
+            const schoolId =
+                req.user.school_id;
+
+            const classResult =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        school_id,
+                        name,
+                        level,
+                        section
+                    FROM classes
+                    WHERE id = $1
+                    AND school_id = $2
+                    LIMIT 1
+                    `,
+                    [
+                        classId,
+                        schoolId
+                    ]
+                );
+
+            if (
+                classResult.rows.length === 0
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Classe introuvable."
+                });
+
+            }
+
+            const studentsResult =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        school_id,
+                        first_name,
+                        last_name,
+                        matricule,
+                        date_of_birth,
+                        gender,
+                        phone,
+                        parent_name,
+                        parent_phone,
+                        address,
+                        photo_url,
+                        active,
+                        created_at,
+                        class_id
+                    FROM students
+                    WHERE school_id = $1
+                    AND class_id = $2
+                    ORDER BY
+                        last_name ASC,
+                        first_name ASC
+                    `,
+                    [
+                        schoolId,
+                        classId
+                    ]
+                );
+
+            res.json({
+                success: true,
+                class:
+                    classResult.rows[0],
+                students:
+                    studentsResult.rows
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erreur élèves classe :",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Impossible de charger les élèves de cette classe."
+            });
+
+        }
+
+    }
+);
+
+/* =========================================================
+   CLASSES — AJOUT
+========================================================= */
+
+app.post(
+    "/api/classes",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const {
+                name,
+                level,
+                section
+            } = req.body;
+
+            const className =
+                typeof name === "string"
+                    ? name.trim()
+                    : "";
+
+            const classLevel =
+                typeof level === "string"
+                    ? level.trim()
+                    : "";
+
+            const classSection =
+                typeof section === "string" &&
+                section.trim()
+                    ? section.trim()
+                    : null;
+
+            if (!className) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le nom de la classe est requis."
+                });
+
+            }
+
+            if (!classLevel) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le niveau de la classe est requis."
+                });
+
+            }
+
+            const result =
+                await pool.query(
+                    `
+                    INSERT INTO classes (
+                        school_id,
+                        name,
+                        level,
+                        section
+                    )
+                    VALUES (
+                        $1,
+                        $2,
+                        $3,
+                        $4
+                    )
+                    RETURNING
+                        id,
+                        school_id,
+                        name,
+                        level,
+                        section
+                    `,
+                    [
+                        req.user.school_id,
+                        className,
+                        classLevel,
+                        classSection
+                    ]
+                );
+
+            res.status(201).json({
+                success: true,
+                message:
+                    "Classe ajoutée avec succès.",
+                class:
+                    result.rows[0]
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erreur ajout classe :",
+                error
+            );
+
+            if (error.code === "23505") {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Cette classe existe déjà."
+                });
+
+            }
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Impossible d'ajouter la classe."
+            });
+
+        }
+
+    }
+);
+
+/* =========================================================
+   CLASSES — MODIFICATION
+========================================================= */
+
+app.put(
+    "/api/classes/:id",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const classId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(classId)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Identifiant de classe invalide."
+                });
+
+            }
+
+            const {
+                name,
+                level,
+                section
+            } = req.body;
+
+            const className =
+                typeof name === "string"
+                    ? name.trim()
+                    : "";
+
+            const classLevel =
+                typeof level === "string"
+                    ? level.trim()
+                    : "";
+
+            const classSection =
+                typeof section === "string" &&
+                section.trim()
+                    ? section.trim()
+                    : null;
+
+            if (!className) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le nom de la classe est requis."
+                });
+
+            }
+
+            if (!classLevel) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Le niveau de la classe est requis."
+                });
+
+            }
+
+            const result =
+                await pool.query(
+                    `
+                    UPDATE classes
+                    SET
+                        name = $1,
+                        level = $2,
+                        section = $3
+                    WHERE id = $4
+                    AND school_id = $5
+                    RETURNING
+                        id,
+                        school_id,
+                        name,
+                        level,
+                        section
+                    `,
+                    [
+                        className,
+                        classLevel,
+                        classSection,
+                        classId,
+                        req.user.school_id
+                    ]
+                );
+
+            if (
+                result.rows.length === 0
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Classe introuvable."
+                });
+
+            }
+
+            res.json({
+                success: true,
+                message:
+                    "Classe modifiée avec succès.",
+                class:
+                    result.rows[0]
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erreur modification classe :",
+                error
+            );
+
+            if (error.code === "23505") {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Cette classe existe déjà."
+                });
+
+            }
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Impossible de modifier la classe."
+            });
+
+        }
+
+    }
+);
+
+/* =========================================================
+   CLASSES — SUPPRESSION
+========================================================= */
+
+app.delete(
+    "/api/classes/:id",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const classId =
+                Number(req.params.id);
+
+            if (
+                !Number.isInteger(classId)
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Identifiant de classe invalide."
+                });
+
+            }
+
+            const studentCount =
+                await pool.query(
+                    `
+                    SELECT COUNT(*)::INTEGER AS count
+                    FROM students
+                    WHERE school_id = $1
+                    AND class_id = $2
+                    `,
+                    [
+                        req.user.school_id,
+                        classId
+                    ]
+                );
+
+            const count =
+                Number(
+                    studentCount.rows[0].count
+                );
+
+            if (count > 0) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Impossible de supprimer cette classe car elle contient des élèves."
+                });
+
+            }
+
+            const result =
+                await pool.query(
+                    `
+                    DELETE FROM classes
+                    WHERE id = $1
+                    AND school_id = $2
+                    RETURNING
+                        id,
+                        name
+                    `,
+                    [
+                        classId,
+                        req.user.school_id
+                    ]
+                );
+
+            if (
+                result.rows.length === 0
+            ) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Classe introuvable."
+                });
+
+            }
+
+            res.json({
+                success: true,
+                message:
+                    "Classe supprimée avec succès.",
+                class:
+                    result.rows[0]
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erreur suppression classe :",
+                error
+            );
+
+            if (error.code === "23503") {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Impossible de supprimer cette classe car elle est utilisée par d'autres données."
+                });
+
+            }
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Impossible de supprimer la classe."
             });
 
         }
@@ -1409,8 +1940,7 @@ app.delete(
                 return res.status(409).json({
                     success: false,
                     message:
-                        "Cette matière est déjà utilisée. " +
-                        "Modifiez son coefficient au lieu de la supprimer."
+                        "Cette matière est déjà utilisée. Modifiez son coefficient au lieu de la supprimer."
                 });
 
             }
