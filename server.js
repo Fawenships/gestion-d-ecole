@@ -448,7 +448,9 @@ app.get(
                         s.active,
                         s.created_at
                     FROM students s
-                    LEFT JOIN classes c ON c.id = s.class_id
+                    LEFT JOIN classes c
+                        ON c.id = s.class_id
+                        AND c.school_id = s.school_id
                     WHERE s.school_id = $1
                     ORDER BY s.last_name ASC, s.first_name ASC
                     `,
@@ -504,13 +506,16 @@ app.post(
             } = req.body;
 
             if (
-                !first_name || !first_name.trim() ||
-                !last_name || !last_name.trim()
+                !first_name ||
+                !first_name.trim() ||
+                !last_name ||
+                !last_name.trim()
             ) {
 
                 return res.status(400).json({
                     success: false,
-                    message: "Le prénom et le nom sont requis."
+                    message:
+                        "Le prénom et le nom sont requis."
                 });
 
             }
@@ -519,192 +524,108 @@ app.post(
 
                 return res.status(400).json({
                     success: false,
-                    message: "La classe est requise."
+                    message:
+                        "La classe est requise."
                 });
 
             }
 
-            const schoolId = req.user.school_id;
+            const schoolId =
+                req.user.school_id;
 
-            const classCheck = await pool.query(
-                `
-                SELECT id
-                FROM classes
-                WHERE id = $1
-                AND school_id = $2
-                LIMIT 1
-                `,
-                [class_id, schoolId]
-            );
+            const classCheck =
+                await pool.query(
+                    `
+                    SELECT id
+                    FROM classes
+                    WHERE id = $1
+                    AND school_id = $2
+                    LIMIT 1
+                    `,
+                    [
+                        class_id,
+                        schoolId
+                    ]
+                );
 
             if (classCheck.rows.length === 0) {
 
                 return res.status(404).json({
                     success: false,
-                    message: "Classe introuvable."
+                    message:
+                        "Classe introuvable."
                 });
 
             }
 
-            /*
-             * Si l'utilisateur fournit un matricule,
-             * on le conserve.
-             *
-             * Si aucun matricule n'est fourni,
-             * on en génère un automatiquement.
-             *
-             * Le format reste court :
-             * EL + 8 chiffres
-             */
-            let finalMatricule =
-                matricule && matricule.trim()
+            const finalMatricule =
+                matricule &&
+                matricule.trim()
                     ? matricule.trim()
-                    : null;
+                    : "EL" +
+                      Date.now()
+                          .toString()
+                          .slice(-8);
 
-            if (!finalMatricule) {
-
-                let generatedMatricule = null;
-                let attempts = 0;
-
-                while (!generatedMatricule && attempts < 10) {
-
-                    attempts++;
-
-                    const timestamp =
-                        Date.now().toString().slice(-5);
-
-                    const random =
-                        Math.floor(
-                            100 + Math.random() * 900
-                        ).toString();
-
-                    const candidate =
-                        "EL" + timestamp + random;
-
-                    const existing =
-                        await pool.query(
-                            `
-                            SELECT id
-                            FROM students
-                            WHERE matricule = $1
-                            LIMIT 1
-                            `,
-                            [candidate]
-                        );
-
-                    if (existing.rows.length === 0) {
-
-                        generatedMatricule =
-                            candidate;
-
-                    }
-
-                }
-
-                if (!generatedMatricule) {
-
-                    return res.status(500).json({
-                        success: false,
-                        message:
-                            "Impossible de générer un matricule unique. Veuillez réessayer."
-                    });
-
-                }
-
-                finalMatricule =
-                    generatedMatricule;
-            }
-
-            /*
-             * Vérification avant insertion.
-             * On vérifie le matricule fourni ou généré.
-             */
-            const matriculeCheck =
+            const result =
                 await pool.query(
                     `
-                    SELECT id
-                    FROM students
-                    WHERE matricule = $1
-                    LIMIT 1
+                    INSERT INTO students (
+                        school_id,
+                        first_name,
+                        last_name,
+                        matricule,
+                        date_of_birth,
+                        gender,
+                        phone,
+                        class_id,
+                        parent_name,
+                        parent_phone,
+                        address,
+                        photo_url
+                    )
+                    VALUES (
+                        $1,$2,$3,$4,$5,$6,
+                        $7,$8,$9,$10,$11,$12
+                    )
+                    RETURNING
+                        id,
+                        school_id,
+                        first_name,
+                        last_name,
+                        matricule,
+                        date_of_birth,
+                        gender,
+                        phone,
+                        class_id,
+                        parent_name,
+                        parent_phone,
+                        address,
+                        photo_url,
+                        created_at
                     `,
-                    [finalMatricule]
+                    [
+                        schoolId,
+                        first_name.trim(),
+                        last_name.trim(),
+                        finalMatricule,
+                        date_of_birth || null,
+                        gender || null,
+                        phone || null,
+                        class_id,
+                        parent_name || null,
+                        parent_phone || null,
+                        address || null,
+                        photo_url || null
+                    ]
                 );
-
-            if (matriculeCheck.rows.length > 0) {
-
-                return res.status(409).json({
-                    success: false,
-                    message: "Ce matricule existe déjà."
-                });
-
-            }
-
-            const result = await pool.query(
-                `
-                INSERT INTO students (
-                    school_id,
-                    first_name,
-                    last_name,
-                    matricule,
-                    date_of_birth,
-                    gender,
-                    phone,
-                    class_id,
-                    parent_name,
-                    parent_phone,
-                    address,
-                    photo_url
-                )
-                VALUES (
-                    $1,
-                    $2,
-                    $3,
-                    $4,
-                    $5,
-                    $6,
-                    $7,
-                    $8,
-                    $9,
-                    $10,
-                    $11,
-                    $12
-                )
-                RETURNING
-                    id,
-                    school_id,
-                    first_name,
-                    last_name,
-                    matricule,
-                    date_of_birth,
-                    gender,
-                    phone,
-                    class_id,
-                    parent_name,
-                    parent_phone,
-                    address,
-                    photo_url,
-                    created_at
-                `,
-                [
-                    schoolId,
-                    first_name.trim(),
-                    last_name.trim(),
-                    finalMatricule,
-                    date_of_birth || null,
-                    gender || null,
-                    phone || null,
-                    class_id,
-                    parent_name || null,
-                    parent_phone || null,
-                    address || null,
-                    photo_url || null
-                ]
-            );
 
             res.status(201).json({
                 success: true,
-                message: "Élève ajouté avec succès.",
-                student: result.rows[0]
+                message:
+                    "Élève ajouté avec succès.",
+                student:
+                    result.rows[0]
             });
 
         } catch (error) {
@@ -714,27 +635,12 @@ app.post(
                 error
             );
 
-            console.error(
-                "Code PostgreSQL :",
-                error.code
-            );
-
-            console.error(
-                "Contrainte PostgreSQL :",
-                error.constraint
-            );
-
-            console.error(
-                "Détail PostgreSQL :",
-                error.detail
-            );
-
             if (error.code === "23505") {
 
                 return res.status(409).json({
                     success: false,
                     message:
-                        "Une donnée unique existe déjà. Vérifiez le matricule."
+                        "Ce matricule existe déjà."
                 });
 
             }
@@ -761,13 +667,17 @@ app.put(
 
         try {
 
-            const studentId = Number(req.params.id);
+            const studentId =
+                Number(req.params.id);
 
-            if (!Number.isInteger(studentId)) {
+            if (
+                !Number.isInteger(studentId)
+            ) {
 
                 return res.status(400).json({
                     success: false,
-                    message: "Identifiant d'élève invalide."
+                    message:
+                        "Identifiant d'élève invalide."
                 });
 
             }
@@ -787,87 +697,110 @@ app.put(
             } = req.body;
 
             if (
-                !first_name || !first_name.trim() ||
-                !last_name || !last_name.trim()
+                !first_name ||
+                !first_name.trim() ||
+                !last_name ||
+                !last_name.trim()
             ) {
 
                 return res.status(400).json({
                     success: false,
-                    message: "Le prénom et le nom sont requis."
+                    message:
+                        "Le prénom et le nom sont requis."
                 });
 
             }
 
-            const result = await pool.query(
-                `
-                UPDATE students
-                SET
-                    first_name = $1,
-                    last_name = $2,
-                    matricule = $3,
-                    date_of_birth = $4,
-                    gender = $5,
-                    phone = $6,
-                    class_id = $7,
-                    parent_name = $8,
-                    parent_phone = $9,
-                    address = $10,
-                    photo_url = $11
-                WHERE id = $12
-                AND school_id = $13
-                RETURNING
-                    id, school_id, first_name, last_name, matricule,
-                    date_of_birth, gender, phone, class_id, parent_name,
-                    parent_phone, address, photo_url, created_at
-                `,
-                [
-                    first_name.trim(),
-                    last_name.trim(),
-                    matricule || null,
-                    date_of_birth || null,
-                    gender || null,
-                    phone || null,
-                    class_id,
-                    parent_name || null,
-                    parent_phone || null,
-                    address || null,
-                    photo_url || null,
-                    studentId,
-                    req.user.school_id
-                ]
-            );
+            const result =
+                await pool.query(
+                    `
+                    UPDATE students
+                    SET
+                        first_name = $1,
+                        last_name = $2,
+                        matricule = $3,
+                        date_of_birth = $4,
+                        gender = $5,
+                        phone = $6,
+                        class_id = $7,
+                        parent_name = $8,
+                        parent_phone = $9,
+                        address = $10,
+                        photo_url = $11
+                    WHERE id = $12
+                    AND school_id = $13
+                    RETURNING
+                        id,
+                        school_id,
+                        first_name,
+                        last_name,
+                        matricule,
+                        date_of_birth,
+                        gender,
+                        phone,
+                        class_id,
+                        parent_name,
+                        parent_phone,
+                        address,
+                        photo_url,
+                        created_at
+                    `,
+                    [
+                        first_name.trim(),
+                        last_name.trim(),
+                        matricule || null,
+                        date_of_birth || null,
+                        gender || null,
+                        phone || null,
+                        class_id,
+                        parent_name || null,
+                        parent_phone || null,
+                        address || null,
+                        photo_url || null,
+                        studentId,
+                        req.user.school_id
+                    ]
+                );
 
             if (result.rows.length === 0) {
 
                 return res.status(404).json({
                     success: false,
-                    message: "Élève introuvable."
+                    message:
+                        "Élève introuvable."
                 });
 
             }
 
             res.json({
                 success: true,
-                message: "Élève modifié avec succès.",
-                student: result.rows[0]
+                message:
+                    "Élève modifié avec succès.",
+                student:
+                    result.rows[0]
             });
 
         } catch (error) {
 
-            console.error("Erreur modification élève :", error);
+            console.error(
+                "Erreur modification élève :",
+                error
+            );
 
             if (error.code === "23505") {
 
                 return res.status(409).json({
                     success: false,
-                    message: "Ce matricule existe déjà."
+                    message:
+                        "Ce matricule existe déjà."
                 });
 
             }
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de modifier l'élève."
+                message:
+                    "Impossible de modifier l'élève."
             });
 
         }
@@ -886,58 +819,77 @@ app.delete(
 
         try {
 
-            const studentId = Number(req.params.id);
+            const studentId =
+                Number(req.params.id);
 
-            if (!Number.isInteger(studentId)) {
+            if (
+                !Number.isInteger(studentId)
+            ) {
 
                 return res.status(400).json({
                     success: false,
-                    message: "Identifiant d'élève invalide."
+                    message:
+                        "Identifiant d'élève invalide."
                 });
 
             }
 
-            const result = await pool.query(
-                `
-                DELETE FROM students
-                WHERE id = $1
-                AND school_id = $2
-                RETURNING id, first_name, last_name
-                `,
-                [studentId, req.user.school_id]
-            );
+            const result =
+                await pool.query(
+                    `
+                    DELETE FROM students
+                    WHERE id = $1
+                    AND school_id = $2
+                    RETURNING
+                        id,
+                        first_name,
+                        last_name
+                    `,
+                    [
+                        studentId,
+                        req.user.school_id
+                    ]
+                );
 
             if (result.rows.length === 0) {
 
                 return res.status(404).json({
                     success: false,
-                    message: "Élève introuvable."
+                    message:
+                        "Élève introuvable."
                 });
 
             }
 
             res.json({
                 success: true,
-                message: "Élève supprimé avec succès.",
-                student: result.rows[0]
+                message:
+                    "Élève supprimé avec succès.",
+                student:
+                    result.rows[0]
             });
 
         } catch (error) {
 
-            console.error("Erreur suppression élève :", error);
+            console.error(
+                "Erreur suppression élève :",
+                error
+            );
 
             if (error.code === "23503") {
 
                 return res.status(409).json({
                     success: false,
-                    message: "Impossible de supprimer : cet élève a des données liées (notes, présences, paiements)."
+                    message:
+                        "Impossible de supprimer : cet élève a des données liées (notes, présences, paiements)."
                 });
 
             }
 
             res.status(500).json({
                 success: false,
-                message: "Impossible de supprimer l'élève."
+                message:
+                    "Impossible de supprimer l'élève."
             });
 
         }
@@ -969,7 +921,8 @@ app.get(
 
             res.json({
                 success: true,
-                teachers: result.rows
+                teachers:
+                    result.rows
             });
 
         } catch (error) {
@@ -991,7 +944,7 @@ app.get(
 );
 
 /* =========================================================
-   CLASSES
+   CLASSES — AVEC NOMBRE AUTOMATIQUE D'ÉLÈVES
 ========================================================= */
 
 app.get(
@@ -1004,17 +957,28 @@ app.get(
             const result =
                 await pool.query(
                     `
-                    SELECT *
-                    FROM classes
-                    WHERE school_id = $1
-                    ORDER BY name ASC
+                    SELECT
+                        c.*,
+                        COUNT(s.id)::INTEGER AS student_count
+                    FROM classes c
+
+                    LEFT JOIN students s
+                        ON s.class_id = c.id
+                        AND s.school_id = c.school_id
+
+                    WHERE c.school_id = $1
+
+                    GROUP BY c.id
+
+                    ORDER BY c.name ASC
                     `,
                     [req.user.school_id]
                 );
 
             res.json({
                 success: true,
-                classes: result.rows
+                classes:
+                    result.rows
             });
 
         } catch (error) {
@@ -1066,7 +1030,8 @@ app.get(
 
             res.json({
                 success: true,
-                subjects: result.rows
+                subjects:
+                    result.rows
             });
 
         } catch (error) {
@@ -1188,7 +1153,8 @@ app.post(
                 success: true,
                 message:
                     "Matière ajoutée avec succès.",
-                subject: result.rows[0]
+                subject:
+                    result.rows[0]
             });
 
         } catch (error) {
