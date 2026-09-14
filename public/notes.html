@@ -1,2076 +1,1845 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes - Gestion École</title>
 
-```
-<title>Gestion École — Notes</title>
-
-<style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f4f6f9;
-        color: #172033;
-    }
-
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 250px;
-        height: 100vh;
-        background: #111827;
-        color: white;
-        padding: 25px 15px;
-        overflow-y: auto;
-    }
-
-    .logo {
-        font-size: 22px;
-        font-weight: 700;
-        padding: 0 15px 30px;
-        border-bottom: 1px solid #293244;
-        margin-bottom: 20px;
-    }
-
-    .logo span {
-        color: #3b82f6;
-    }
-
-    .menu {
-        list-style: none;
-    }
-
-    .menu li {
-        margin-bottom: 6px;
-    }
-
-    .menu a {
-        display: block;
-        text-decoration: none;
-        color: #cbd5e1;
-        padding: 13px 15px;
-        border-radius: 8px;
-        transition: 0.2s;
-    }
-
-    .menu a:hover,
-    .menu a.active {
-        background: #2563eb;
-        color: white;
-    }
-
-    .main {
-        margin-left: 250px;
-        min-height: 100vh;
-    }
-
-    .topbar {
-        height: 75px;
-        background: white;
-        border-bottom: 1px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 35px;
-    }
-
-    .topbar h1 {
-        font-size: 22px;
-    }
-
-    .user {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #2563eb;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-
-    .content {
-        padding: 35px;
-    }
-
-    .page-header {
-        margin-bottom: 30px;
-    }
-
-    .page-header h2 {
-        font-size: 28px;
-        margin-bottom: 7px;
-    }
-
-    .page-header p {
-        color: #6b7280;
-    }
-
-    .stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .stat-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 22px;
-    }
-
-    .stat-card p {
-        color: #6b7280;
-        font-size: 14px;
-        margin-bottom: 10px;
-    }
-
-    .stat-card h3 {
-        font-size: 28px;
-    }
-
-    .panel {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-    }
-
-    .panel-title {
-        margin-bottom: 20px;
-    }
-
-    .panel-title h3 {
-        font-size: 19px;
-        margin-bottom: 6px;
-    }
-
-    .panel-title p {
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .filters {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 18px;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .form-group label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #475569;
-    }
-
-    .form-group select,
-    .form-group input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 7px;
-        background: white;
-        outline: none;
-        font-size: 14px;
-    }
-
-    .form-group select:focus,
-    .form-group input:focus {
-        border-color: #2563eb;
-    }
-
-    .filter-actions {
-        margin-top: 20px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .btn {
-        border: none;
-        border-radius: 8px;
-        padding: 11px 18px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    .btn-primary {
-        background: #2563eb;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #1d4ed8;
-    }
-
-    .btn-primary:disabled {
-        background: #93c5fd;
-        cursor: not-allowed;
-    }
-
-    .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .btn-secondary:hover {
-        background: #d1d5db;
-    }
-
-    .table-container {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .table-header {
-        padding: 20px;
-        border-bottom: 1px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-    }
-
-    .table-header h3 {
-        font-size: 18px;
-    }
-
-    .search {
-        width: 280px;
-        padding: 11px 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 7px;
-        outline: none;
-    }
-
-    .search:focus {
-        border-color: #2563eb;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th,
-    td {
-        padding: 15px 20px;
-        text-align: left;
-        border-bottom: 1px solid #edf0f3;
-        font-size: 14px;
-    }
-
-    th {
-        background: #f8fafc;
-        color: #475569;
-        font-weight: 600;
-    }
-
-    tbody tr:hover {
-        background: #f8fafc;
-    }
-
-    .note-input {
-        width: 100px;
-        padding: 9px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        outline: none;
-        text-align: center;
-        font-size: 14px;
-    }
-
-    .note-input:focus {
-        border-color: #2563eb;
-    }
-
-    .status {
-        display: inline-block;
-        padding: 6px 11px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .status-ok {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .status-empty {
-        background: #f1f5f9;
-        color: #64748b;
-    }
-
-    .empty {
-        text-align: center;
-        padding: 50px 20px;
-        color: #6b7280;
-    }
-
-    .message {
-        display: none;
-        padding: 14px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 14px;
-    }
-
-    .message-error {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .message-success {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .max-note-info {
-        margin-top: 8px;
-        font-size: 12px;
-        color: #64748b;
-    }
-
-    @media (max-width: 1000px) {
-        .stats {
-            grid-template-columns: repeat(2, 1fr);
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        .filters {
-            grid-template-columns: repeat(2, 1fr);
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #1f2937;
         }
-    }
 
-    @media (max-width: 800px) {
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
         .sidebar {
-            width: 210px;
+            width: 250px;
+            background: #111827;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
         }
 
+        .logo {
+            padding: 25px 20px;
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 1px solid #374151;
+        }
+
+        .logo span {
+            color: #3b82f6;
+        }
+
+        .menu {
+            padding: 15px 10px;
+        }
+
+        .menu a {
+            display: block;
+            padding: 13px 15px;
+            color: #d1d5db;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+        }
+
+        .menu a:hover {
+            background: #1f2937;
+            color: white;
+        }
+
+        .menu a.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* MAIN */
         .main {
-            margin-left: 210px;
+            margin-left: 250px;
+            width: calc(100% - 250px);
+        }
+
+        .topbar {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+        }
+
+        .topbar h1 {
+            font-size: 22px;
+        }
+
+        .user-info {
+            font-size: 14px;
+            color: #4b5563;
         }
 
         .content {
+            padding: 30px;
+        }
+
+        /* MESSAGE */
+        .message {
+            display: none;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .message.success {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .message.info {
+            display: block;
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* FILTERS */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .form-group select,
+        .form-group input {
+            height: 44px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 0 12px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: #2563eb;
+        }
+
+        .btn {
+            height: 44px;
+            border: none;
+            border-radius: 7px;
+            padding: 0 18px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat {
+            background: white;
+            border-radius: 12px;
             padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        /* TABLE */
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .table-header {
-            flex-direction: column;
-            align-items: stretch;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .table-header h2 {
+            font-size: 18px;
         }
 
         .search {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 600px) {
-        .sidebar {
-            display: none;
-        }
-
-        .main {
-            margin-left: 0;
+            width: 260px;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 0 12px;
+            outline: none;
         }
 
-        .content {
-            padding: 15px;
+        .search:focus {
+            border-color: #2563eb;
         }
 
-        .stats {
-            grid-template-columns: 1fr;
-        }
-
-        .filters {
-            grid-template-columns: 1fr;
-        }
-
-        .table-container {
+        .table-wrapper {
             overflow-x: auto;
         }
 
         table {
-            min-width: 850px;
+            width: 100%;
+            border-collapse: collapse;
         }
-    }
-</style>
-```
 
+        th {
+            background: #f9fafb;
+            color: #374151;
+            font-size: 13px;
+            text-align: left;
+            padding: 14px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .note-input {
+            width: 100px;
+            height: 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 15px;
+            font-weight: bold;
+            outline: none;
+            text-align: center;
+        }
+
+        .note-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
+        }
+
+        .student-name {
+            font-weight: 600;
+        }
+
+        .matricule {
+            color: #6b7280;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+        }
+
+        .max-note {
+            color: #6b7280;
+            font-size: 13px;
+            margin-left: 5px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1000px) {
+            .filters {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 210px;
+            }
+
+            .main {
+                margin-left: 210px;
+                width: calc(100% - 210px);
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search {
+                width: 100%;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .sidebar {
+                width: 180px;
+            }
+
+            .main {
+                margin-left: 180px;
+                width: calc(100% - 180px);
+            }
+
+            .logo {
+                font-size: 17px;
+            }
+
+            .menu a {
+                font-size: 13px;
+                padding: 11px 9px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<aside class="sidebar">
+<div class="layout">
 
-```
-<div class="logo">
-    Gestion <span>École</span>
-</div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-<ul class="menu">
-
-    <li>
-        <a href="/admin.html">
-            Tableau de bord
-        </a>
-    </li>
-
-    <li>
-        <a href="/eleves.html">
-            Élèves
-        </a>
-    </li>
-
-    <li>
-        <a href="/professeurs.html">
-            Professeurs
-        </a>
-    </li>
-
-    <li>
-        <a href="/classes.html">
-            Classes
-        </a>
-    </li>
-
-    <li>
-        <a href="/matieres.html">
-            Matières
-        </a>
-    </li>
-
-    <li>
-        <a href="/presence.html">
-            Présences
-        </a>
-    </li>
-
-    <li>
-        <a href="/notes.html" class="active">
-            Notes
-        </a>
-    </li>
-
-    <li>
-        <a href="/emploi-du-temps.html">
-            Emploi du temps
-        </a>
-    </li>
-
-    <li>
-        <a href="/paiements.html">
-            Paiements
-        </a>
-    </li>
-
-    <li>
-        <a href="/bulletins.html">
-            Bulletins
-        </a>
-    </li>
-
-</ul>
-```
-
-</aside>
-
-<main class="main">
-
-```
-<header class="topbar">
-
-    <h1>Gestion des notes</h1>
-
-    <div class="user">
-
-        <strong id="userName">
-            Administrateur
-        </strong>
-
-        <div
-            class="user-avatar"
-            id="userAvatar"
-        >
-            A
+        <div class="logo">
+            Gestion <span>École</span>
         </div>
 
-    </div>
+        <nav class="menu">
+            <a href="/admin.html">Tableau de bord</a>
+            <a href="/eleves.html">Élèves</a>
+            <a href="/professeurs.html">Professeurs</a>
+            <a href="/classes.html">Classes</a>
+            <a href="/matieres.html">Matières</a>
+            <a href="/presence.html">Présence</a>
+            <a href="/notes.html" class="active">Notes</a>
+            <a href="/emploi-du-temps.html">Emploi du temps</a>
+            <a href="/paiements.html">Paiements</a>
+            <a href="/bulletins.html">Bulletins</a>
+        </nav>
 
-</header>
+    </aside>
 
-<section class="content">
+    <!-- MAIN -->
+    <main class="main">
 
-    <div class="page-header">
-
-        <h2>Notes</h2>
-
-        <p>
-            Saisissez et consultez les résultats
-            scolaires des élèves.
-        </p>
-
-    </div>
-
-    <div
-        id="errorMessage"
-        class="message message-error"
-    ></div>
-
-    <div
-        id="successMessage"
-        class="message message-success"
-    ></div>
-
-    <div class="stats">
-
-        <div class="stat-card">
-            <p>Élèves affichés</p>
-            <h3 id="totalStudents">0</h3>
-        </div>
-
-        <div class="stat-card">
-            <p>Notes saisies</p>
-            <h3 id="notesEntered">0</h3>
-        </div>
-
-        <div class="stat-card">
-            <p>Notes manquantes</p>
-            <h3 id="notesMissing">0</h3>
-        </div>
-
-        <div class="stat-card">
-            <p>Moyenne de la classe</p>
-            <h3 id="classAverage">—</h3>
-        </div>
-
-    </div>
-
-    <div class="panel">
-
-        <div class="panel-title">
-
-            <h3>
-                Sélection des résultats
-            </h3>
-
-            <p>
-                Sélectionnez la classe, la matière
-                et la période avant de saisir les notes.
-            </p>
-
-        </div>
-
-        <div class="filters">
-
-            <div class="form-group">
-
-                <label for="classSelect">
-                    Classe
-                </label>
-
-                <select id="classSelect">
-
-                    <option value="">
-                        Sélectionner une classe
-                    </option>
-
-                </select>
-
+        <header class="topbar">
+            <h1>Gestion des notes</h1>
+            <div class="user-info" id="userInfo">
+                Chargement...
             </div>
+        </header>
 
-            <div class="form-group">
+        <section class="content">
 
-                <label for="subjectSelect">
-                    Matière
-                </label>
+            <div id="message" class="message"></div>
 
-                <select id="subjectSelect">
+            <!-- FILTRES -->
+            <div class="card">
 
-                    <option value="">
-                        Sélectionner une matière
-                    </option>
+                <div class="card-title">
+                    Sélectionner les informations
+                </div>
 
-                </select>
+                <div class="filters">
 
-            </div>
+                    <div class="form-group">
+                        <label for="classSelect">Classe</label>
 
-            <div class="form-group">
+                        <select id="classSelect">
+                            <option value="">Sélectionner une classe</option>
+                        </select>
+                    </div>
 
-                <label for="periodSelect">
-                    Période
-                </label>
+                    <div class="form-group">
+                        <label for="subjectSelect">Matière</label>
 
-                <select id="periodSelect">
+                        <select id="subjectSelect">
+                            <option value="">Sélectionner une matière</option>
+                        </select>
+                    </div>
 
-                    <option value="">
-                        Sélectionner une période
-                    </option>
+                    <div class="form-group">
+                        <label for="periodSelect">Période</label>
 
-                    <option value="1">
-                        1er trimestre
-                    </option>
+                        <select id="periodSelect">
 
-                    <option value="2">
-                        2e trimestre
-                    </option>
+                            <option value="">
+                                Sélectionner une période
+                            </option>
 
-                    <option value="3">
-                        3e trimestre
-                    </option>
+                            <option value="1er trimestre">
+                                1er trimestre
+                            </option>
 
-                    <option value="1er_semestre">
-                        1er semestre
-                    </option>
+                            <option value="2e trimestre">
+                                2e trimestre
+                            </option>
 
-                    <option value="2e_semestre">
-                        2e semestre
-                    </option>
+                            <option value="3e trimestre">
+                                3e trimestre
+                            </option>
 
-                </select>
+                            <option value="1er semestre">
+                                1er semestre
+                            </option>
 
-            </div>
+                            <option value="2e semestre">
+                                2e semestre
+                            </option>
 
-            <div class="form-group">
+                            <option value="Examen">
+                                Examen
+                            </option>
 
-                <label for="maxGrade">
-                    Note maximale
-                </label>
+                        </select>
+                    </div>
 
-                <input
-                    type="number"
-                    id="maxGrade"
-                    value="100"
-                    min="1"
-                    max="400"
-                    step="1"
-                    oninput="limitMaxGrade(this)"
-                >
+                    <div class="form-group">
 
-                <div class="max-note-info">
-                    Maximum autorisé : 400
+                        <label for="maxGrade">
+                            Note maximale
+                        </label>
+
+                        <input
+                            type="number"
+                            id="maxGrade"
+                            value="100"
+                            min="1"
+                            max="400"
+                            step="0.01"
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="buttons">
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="loadButton"
+                    >
+                        Afficher les élèves
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="resetButton"
+                    >
+                        Réinitialiser
+                    </button>
+
                 </div>
 
             </div>
 
-        </div>
+            <!-- STATS -->
+            <div class="stats">
 
-        <div class="filter-actions">
+                <div class="stat">
+                    <div class="stat-label">
+                        Élèves
+                    </div>
 
-            <button
-                class="btn btn-secondary"
-                onclick="resetSelection()"
-            >
-                Réinitialiser
-            </button>
+                    <div class="stat-value" id="totalStudents">
+                        0
+                    </div>
+                </div>
 
-            <button
-                class="btn btn-primary"
-                onclick="loadStudentsForClass()"
-            >
-                Afficher les élèves
-            </button>
+                <div class="stat">
+                    <div class="stat-label">
+                        Notes saisies
+                    </div>
 
-        </div>
+                    <div class="stat-value" id="notesEntered">
+                        0
+                    </div>
+                </div>
 
-    </div>
+                <div class="stat">
+                    <div class="stat-label">
+                        Notes manquantes
+                    </div>
 
-    <div class="table-container">
+                    <div class="stat-value" id="notesMissing">
+                        0
+                    </div>
+                </div>
 
-        <div class="table-header">
+                <div class="stat">
+                    <div class="stat-label">
+                        Moyenne
+                    </div>
 
-            <h3>
-                Saisie des notes
-            </h3>
+                    <div class="stat-value" id="classAverage">
+                        -
+                    </div>
+                </div>
 
-            <input
-                type="text"
-                id="searchInput"
-                class="search"
-                placeholder="Rechercher un élève..."
-            >
+            </div>
 
-        </div>
+            <!-- TABLE -->
+            <div class="table-card">
 
-        <table>
+                <div class="table-header">
 
-            <thead>
+                    <h2>
+                        Saisie des notes
+                    </h2>
 
-                <tr>
-                    <th>Matricule</th>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Classe</th>
-                    <th>Note</th>
-                    <th>Statut</th>
-                </tr>
-
-            </thead>
-
-            <tbody id="studentsTable">
-
-                <tr>
-
-                    <td
-                        colspan="6"
-                        class="empty"
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search"
+                        placeholder="Rechercher un élève..."
                     >
-                        Sélectionnez une classe,
-                        une matière et une période.
-                    </td>
 
-                </tr>
+                </div>
 
-            </tbody>
+                <div class="table-wrapper">
 
-        </table>
+                    <table>
 
-    </div>
+                        <thead>
 
-    <div
-        style="
-            display:flex;
-            justify-content:flex-end;
-            margin-top:20px;
-        "
-    >
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Note</th>
+                                <th>Maximum</th>
+                            </tr>
 
-        <button
-            id="saveButton"
-            class="btn btn-primary"
-            onclick="saveNotes()"
-        >
-            Enregistrer les notes
-        </button>
+                        </thead>
 
-    </div>
+                        <tbody id="studentsTable">
 
-</section>
-```
+                            <tr>
+                                <td colspan="5" class="empty">
+                                    Sélectionnez une classe, une matière et une période puis cliquez sur « Afficher les élèves ».
+                                </td>
+                            </tr>
 
-</main>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="buttons">
+
+                    <button
+                        type="button"
+                        class="btn btn-success"
+                        id="saveButton"
+                    >
+                        Enregistrer les notes
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
 
 <script>
 
-/* =========================================================
-   AUTHENTIFICATION
-========================================================= */
+    /* =========================
+       VARIABLES
+    ========================= */
 
-const token =
-    localStorage.getItem("school_token");
+    const token = localStorage.getItem("school_token");
 
-if (!token) {
-    window.location.href = "/";
-}
+    let students = [];
+    let classes = [];
+    let subjects = [];
+
+    let currentClassId = "";
+    let currentSubjectId = "";
+    let currentPeriod = "";
 
 
-/* =========================================================
-   UTILISATEUR
-========================================================= */
+    /* =========================
+       AUTHENTIFICATION
+    ========================= */
 
-try {
+    if (!token) {
+        window.location.href = "/";
+    }
 
-    const user =
-        JSON.parse(
-            localStorage.getItem("school_user") || "{}"
-        );
 
-    const fullName =
-        `${user.first_name || ""} ${user.last_name || ""}`
-        .trim();
+    /* =========================
+       ELEMENTS
+    ========================= */
 
-    if (fullName) {
+    const classSelect = document.getElementById("classSelect");
+    const subjectSelect = document.getElementById("subjectSelect");
+    const periodSelect = document.getElementById("periodSelect");
+    const maxGradeInput = document.getElementById("maxGrade");
 
-        document.getElementById("userName")
-            .textContent = fullName;
+    const loadButton = document.getElementById("loadButton");
+    const saveButton = document.getElementById("saveButton");
+    const resetButton = document.getElementById("resetButton");
 
-        document.getElementById("userAvatar")
-            .textContent =
-                (user.first_name || "A")
-                .charAt(0)
-                .toUpperCase();
+    const studentsTable = document.getElementById("studentsTable");
+    const searchInput = document.getElementById("searchInput");
+
+    const messageBox = document.getElementById("message");
+
+    const totalStudents = document.getElementById("totalStudents");
+    const notesEntered = document.getElementById("notesEntered");
+    const notesMissing = document.getElementById("notesMissing");
+    const classAverage = document.getElementById("classAverage");
+
+    const userInfo = document.getElementById("userInfo");
+
+
+    /* =========================
+       UTILITAIRES
+    ========================= */
+
+    function escapeHTML(value) {
+
+        if (value === null || value === undefined) {
+            return "";
+        }
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    function showMessage(text, type = "info") {
+
+        messageBox.textContent = text;
+        messageBox.className = "message " + type;
 
     }
 
-} catch (error) {
 
-    console.error(
-        "Erreur utilisateur :",
-        error
-    );
+    function hideMessage() {
 
-}
+        messageBox.textContent = "";
+        messageBox.className = "message";
 
-
-/* =========================================================
-   DONNÉES
-========================================================= */
-
-let students = [];
-let displayedStudents = [];
+    }
 
 
-/* =========================================================
-   CHARGER LES CLASSES
-========================================================= */
+    function authHeaders() {
 
-async function loadClasses() {
+        return {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+        };
 
-    try {
+    }
 
-        const response =
-            await fetch(
+
+    async function handleResponse(response) {
+
+        if (response.status === 401 || response.status === 403) {
+
+            localStorage.removeItem("school_token");
+            localStorage.removeItem("school_user");
+
+            window.location.href = "/";
+
+            throw new Error("Session expirée.");
+
+        }
+
+        let data;
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Une erreur est survenue."
+            );
+
+        }
+
+        return data;
+
+    }
+
+
+    /* =========================
+       CHARGER UTILISATEUR
+    ========================= */
+
+    async function loadUser() {
+
+        try {
+
+            const response = await fetch(
+                "/api/me",
+                {
+                    headers: authHeaders()
+                }
+            );
+
+            const data = await handleResponse(response);
+
+            const user = data.user || data;
+
+            if (user) {
+
+                userInfo.textContent =
+                    user.name ||
+                    user.full_name ||
+                    user.email ||
+                    "Administrateur";
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            userInfo.textContent = "Administrateur";
+
+        }
+
+    }
+
+
+    /* =========================
+       CHARGER LES CLASSES
+    ========================= */
+
+    async function loadClasses() {
+
+        try {
+
+            const response = await fetch(
                 "/api/classes",
                 {
-                    headers: {
-                        "Authorization":
-                            `Bearer ${token}`
-                    }
+                    headers: authHeaders()
                 }
             );
 
-        if (
-            response.status === 401 ||
-            response.status === 403
-        ) {
-            logout();
-            return;
-        }
+            const data = await handleResponse(response);
 
-        const data =
-            await response.json();
+            classes = data.classes || [];
 
-        if (!response.ok || !data.success) {
+            classSelect.innerHTML =
+                '<option value="">Sélectionner une classe</option>';
 
-            throw new Error(
-                data.message ||
-                "Impossible de charger les classes."
+            classes.forEach(classItem => {
+
+                const option = document.createElement("option");
+
+                option.value = classItem.id;
+
+                option.textContent =
+                    classItem.name ||
+                    classItem.nom ||
+                    ("Classe " + classItem.id);
+
+                classSelect.appendChild(option);
+
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "Impossible de charger les classes : " + error.message,
+                "error"
             );
 
         }
-
-        const select =
-            document.getElementById(
-                "classSelect"
-            );
-
-        select.innerHTML = `
-            <option value="">
-                Sélectionner une classe
-            </option>
-        `;
-
-        (data.classes || []).forEach(item => {
-
-            const option =
-                document.createElement("option");
-
-            option.value =
-                String(item.id);
-
-            option.textContent =
-                item.name +
-                (
-                    item.section
-                        ? " — " + item.section
-                        : ""
-                );
-
-            select.appendChild(option);
-
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Erreur classes :",
-            error
-        );
-
-        showError(error.message);
 
     }
-}
 
 
-/* =========================================================
-   CHARGER LES MATIÈRES
-========================================================= */
+    /* =========================
+       CHARGER LES MATIERES
+    ========================= */
 
-async function loadSubjects() {
+    async function loadSubjects() {
 
-    try {
+        try {
 
-        const response =
-            await fetch(
+            const response = await fetch(
                 "/api/subjects",
                 {
-                    headers: {
-                        "Authorization":
-                            `Bearer ${token}`
-                    }
+                    headers: authHeaders()
                 }
             );
 
-        if (
-            response.status === 401 ||
-            response.status === 403
-        ) {
-            logout();
+            const data = await handleResponse(response);
+
+            subjects = data.subjects || [];
+
+            subjectSelect.innerHTML =
+                '<option value="">Sélectionner une matière</option>';
+
+            subjects.forEach(subject => {
+
+                const option = document.createElement("option");
+
+                option.value = subject.id;
+
+                option.textContent =
+                    subject.name ||
+                    subject.nom ||
+                    ("Matière " + subject.id);
+
+                subjectSelect.appendChild(option);
+
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "Impossible de charger les matières : " + error.message,
+                "error"
+            );
+
+        }
+
+    }
+
+
+    /* =========================
+       CHARGER LES ELEVES
+    ========================= */
+
+    async function loadStudentsForClass() {
+
+        const classId = classSelect.value;
+        const subjectId = subjectSelect.value;
+        const period = periodSelect.value;
+
+        if (!classId) {
+
+            showMessage(
+                "Veuillez sélectionner une classe.",
+                "error"
+            );
+
             return;
-        }
-
-        const data =
-            await response.json();
-
-        if (!response.ok || !data.success) {
-
-            throw new Error(
-                data.message ||
-                "Impossible de charger les matières."
-            );
 
         }
 
-        const select =
-            document.getElementById(
-                "subjectSelect"
+        if (!subjectId) {
+
+            showMessage(
+                "Veuillez sélectionner une matière.",
+                "error"
             );
 
-        select.innerHTML = `
-            <option value="">
-                Sélectionner une matière
-            </option>
+            return;
+
+        }
+
+        if (!period) {
+
+            showMessage(
+                "Veuillez sélectionner une période.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        let maxGrade =
+            parseFloat(maxGradeInput.value);
+
+        if (
+            Number.isNaN(maxGrade) ||
+            maxGrade <= 0
+        ) {
+
+            showMessage(
+                "Veuillez entrer une note maximale valide.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        currentClassId = classId;
+        currentSubjectId = subjectId;
+        currentPeriod = period;
+
+        hideMessage();
+
+        studentsTable.innerHTML = `
+            <tr>
+                <td colspan="5" class="loading">
+                    Chargement des élèves...
+                </td>
+            </tr>
         `;
 
-        (data.subjects || []).forEach(subject => {
+        try {
 
-            const option =
-                document.createElement("option");
+            /* =========================
+               1. CHARGER TOUS LES ELEVES
+            ========================= */
 
-            option.value =
-                String(subject.id);
-
-            option.textContent =
-                subject.name +
-                (
-                    subject.code
-                        ? " (" + subject.code + ")"
-                        : ""
-                );
-
-            select.appendChild(option);
-
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Erreur matières :",
-            error
-        );
-
-        showError(error.message);
-
-    }
-}
-
-
-/* =========================================================
-   CHARGER LES ÉLÈVES ET LES NOTES
-========================================================= */
-
-async function loadStudentsForClass() {
-
-    hideMessages();
-
-    const classId =
-        document.getElementById(
-            "classSelect"
-        ).value;
-
-    const subjectId =
-        document.getElementById(
-            "subjectSelect"
-        ).value;
-
-    const period =
-        document.getElementById(
-            "periodSelect"
-        ).value;
-
-    if (!classId) {
-
-        showError(
-            "Veuillez sélectionner une classe."
-        );
-
-        return;
-    }
-
-    if (!subjectId) {
-
-        showError(
-            "Veuillez sélectionner une matière."
-        );
-
-        return;
-    }
-
-    if (!period) {
-
-        showError(
-            "Veuillez sélectionner une période."
-        );
-
-        return;
-    }
-
-    try {
-
-        /* -------------------------------------------------
-           1. CHARGER TOUS LES ÉLÈVES
-        ------------------------------------------------- */
-
-        const studentsResponse =
-            await fetch(
+            const studentsResponse = await fetch(
                 "/api/students",
                 {
-                    headers: {
-                        "Authorization":
-                            `Bearer ${token}`
-                    }
+                    headers: authHeaders()
                 }
             );
 
-        if (
-            studentsResponse.status === 401 ||
-            studentsResponse.status === 403
-        ) {
+            const studentsData =
+                await handleResponse(studentsResponse);
 
-            logout();
-            return;
-
-        }
-
-        const studentsData =
-            await studentsResponse.json();
-
-        if (
-            !studentsResponse.ok ||
-            !studentsData.success
-        ) {
-
-            throw new Error(
-                studentsData.message ||
-                "Impossible de charger les élèves."
-            );
-
-        }
-
-        /*
-         * IMPORTANT :
-         * class_id peut être un nombre venant
-         * de PostgreSQL alors que classId est
-         * une chaîne venant du select.
-         *
-         * On convertit les deux en String.
-         */
-
-        students =
-            (studentsData.students || [])
-            .filter(student =>
-                String(student.class_id) ===
-                String(classId)
-            );
+            const allStudents =
+                studentsData.students || [];
 
 
-        /* -------------------------------------------------
-           2. CHARGER LES NOTES EXISTANTES
-        ------------------------------------------------- */
+            /* =========================
+               2. FILTRER LA CLASSE
+               IMPORTANT :
+               String() évite le problème
+               nombre vs texte.
+            ========================= */
 
-        const gradesUrl =
-            `/api/grades?class_id=${encodeURIComponent(classId)}` +
-            `&subject_id=${encodeURIComponent(subjectId)}` +
-            `&period=${encodeURIComponent(period)}`;
-
-        const gradesResponse =
-            await fetch(
-                gradesUrl,
-                {
-                    headers: {
-                        "Authorization":
-                            `Bearer ${token}`
-                    }
-                }
-            );
-
-        if (
-            gradesResponse.status === 401 ||
-            gradesResponse.status === 403
-        ) {
-
-            logout();
-            return;
-
-        }
-
-        const gradesData =
-            await gradesResponse.json();
-
-        if (
-            !gradesResponse.ok ||
-            !gradesData.success
-        ) {
-
-            throw new Error(
-                gradesData.message ||
-                "Impossible de charger les notes."
-            );
-
-        }
+            students =
+                allStudents.filter(
+                    student =>
+                        String(student.class_id) ===
+                        String(classId)
+                );
 
 
-        /* -------------------------------------------------
-           3. CRÉER UNE CARTE DES NOTES
-        ------------------------------------------------- */
+            /* =========================
+               3. CHARGER LES NOTES
+            ========================= */
 
-        const gradeMap =
-            new Map();
+            const gradesUrl =
+                "/api/grades" +
+                "?class_id=" +
+                encodeURIComponent(classId) +
+                "&subject_id=" +
+                encodeURIComponent(subjectId) +
+                "&period=" +
+                encodeURIComponent(period);
 
-        (gradesData.grades || [])
-            .forEach(item => {
-
-                gradeMap.set(
-                    String(item.student_id),
+            const gradesResponse =
+                await fetch(
+                    gradesUrl,
                     {
-                        grade: item.grade,
-                        max_grade: item.max_grade
+                        headers: authHeaders()
                     }
+                );
+
+            const gradesData =
+                await handleResponse(gradesResponse);
+
+            const savedGrades =
+                gradesData.grades || [];
+
+
+            /* =========================
+               4. ASSOCIER LES NOTES
+            ========================= */
+
+            const gradesMap = new Map();
+
+            savedGrades.forEach(grade => {
+
+                gradesMap.set(
+                    String(grade.student_id),
+                    grade
                 );
 
             });
 
 
-        /* -------------------------------------------------
-           4. ASSOCIATION ÉLÈVE → NOTE
-        ------------------------------------------------- */
+            let savedMaxGrade = null;
 
-        students =
-            students.map(student => {
 
-                const savedGrade =
-                    gradeMap.get(
+            students = students.map(student => {
+
+                const saved =
+                    gradesMap.get(
                         String(student.id)
                     );
 
+                if (
+                    saved &&
+                    saved.max_grade !== null &&
+                    saved.max_grade !== undefined
+                ) {
+
+                    savedMaxGrade =
+                        parseFloat(saved.max_grade);
+
+                }
+
                 return {
                     ...student,
-
                     note:
-                        savedGrade
-                            ? savedGrade.grade
+                        saved &&
+                        saved.grade !== null &&
+                        saved.grade !== undefined
+                            ? saved.grade
                             : "",
-
                     savedMaxGrade:
-                        savedGrade
-                            ? savedGrade.max_grade
+                        saved
+                            ? saved.max_grade
                             : null
                 };
 
             });
 
 
-        /* -------------------------------------------------
-           5. RESTAURER LA NOTE MAXIMALE
-        ------------------------------------------------- */
-
-        const savedGrades =
-            gradesData.grades || [];
-
-        if (
-            savedGrades.length > 0 &&
-            savedGrades[0].max_grade
-        ) {
-
-            const savedMax =
-                Number(
-                    savedGrades[0].max_grade
-                );
+            /* =========================
+               5. RESTAURER LA NOTE MAX
+            ========================= */
 
             if (
-                Number.isFinite(savedMax) &&
-                savedMax >= 1 &&
-                savedMax <= 400
+                savedMaxGrade !== null &&
+                !Number.isNaN(savedMaxGrade)
             ) {
 
-                document.getElementById(
-                    "maxGrade"
-                ).value =
-                    savedMax;
+                maxGradeInput.value =
+                    savedMaxGrade;
 
             }
 
-        }
 
+            /* =========================
+               6. AFFICHER
+            ========================= */
 
-        /* -------------------------------------------------
-           6. AFFICHER
-        ------------------------------------------------- */
+            renderStudents(students);
 
-        displayedStudents =
-            [...students];
+            updateStats();
 
-        displayStudents(
-            displayedStudents
-        );
+            if (students.length === 0) {
 
-        updateStatistics(
-            displayedStudents
-        );
+                showMessage(
+                    "Aucun élève n'est enregistré dans cette classe.",
+                    "info"
+                );
 
-        if (!students.length) {
+            } else {
 
-            showError(
-                "Aucun élève n'est inscrit dans cette classe."
+                showMessage(
+                    students.length +
+                    " élève(s) chargé(s). Vous pouvez maintenant saisir les notes.",
+                    "success"
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            students = [];
+
+            studentsTable.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty">
+                        Impossible de charger les élèves.
+                    </td>
+                </tr>
+            `;
+
+            updateStats();
+
+            showMessage(
+                error.message,
+                "error"
             );
 
         }
 
-    } catch (error) {
-
-        console.error(
-            "Erreur chargement notes :",
-            error
-        );
-
-        showError(
-            error.message ||
-            "Erreur lors du chargement des notes."
-        );
-
-    }
-}
-
-
-/* =========================================================
-   AFFICHER LES ÉLÈVES
-========================================================= */
-
-function displayStudents(list) {
-
-    const table =
-        document.getElementById(
-            "studentsTable"
-        );
-
-    if (!list.length) {
-
-        table.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty">
-                    Aucun élève trouvé dans cette classe.
-                </td>
-            </tr>
-        `;
-
-        return;
     }
 
-    table.innerHTML =
-        list.map(student => {
 
-            const note =
-                student.note ?? "";
+    /* =========================
+       AFFICHER LES ELEVES
+    ========================= */
 
-            const status =
-                note === "" ||
-                note === null ||
-                typeof note === "undefined"
+    function renderStudents(list) {
 
-                    ? `
-                        <span class="status status-empty">
-                            Non saisie
-                        </span>
-                      `
+        if (!list || list.length === 0) {
 
-                    : `
-                        <span class="status status-ok">
-                            Saisie
-                        </span>
-                      `;
-
-            return `
+            studentsTable.innerHTML = `
                 <tr>
-
-                    <td>
-                        ${escapeHtml(
-                            student.matricule || "—"
-                        )}
+                    <td colspan="5" class="empty">
+                        Aucun élève trouvé.
                     </td>
-
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                                student.last_name || "—"
-                            )}
-                        </strong>
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                            student.first_name || "—"
-                        )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                            student.class_name || "—"
-                        )}
-                    </td>
-
-                    <td>
-
-                        <input
-                            type="number"
-                            class="note-input"
-                            data-student-id="${student.id}"
-                            value="${note}"
-                            min="0"
-                            max="${getMaxGrade()}"
-                            step="0.01"
-                            oninput="validateNote(this)"
-                        >
-
-                    </td>
-
-                    <td class="status-cell">
-                        ${status}
-                    </td>
-
                 </tr>
             `;
 
-        }).join("");
+            return;
 
-}
+        }
 
 
-/* =========================================================
-   NOTE MAXIMALE
-========================================================= */
+        const maxGrade =
+            parseFloat(maxGradeInput.value) || 100;
 
-function getMaxGrade() {
 
-    let value =
-        Number(
-            document.getElementById(
-                "maxGrade"
-            ).value
-        );
+        studentsTable.innerHTML =
+            list.map(student => {
 
-    if (!Number.isFinite(value)) {
-        value = 100;
+                const firstName =
+                    student.first_name ||
+                    student.firstname ||
+                    student.prenom ||
+                    "";
+
+                const lastName =
+                    student.last_name ||
+                    student.lastname ||
+                    student.nom ||
+                    "";
+
+                const fullName =
+                    student.name ||
+                    student.full_name ||
+                    "";
+
+                let displayedFirstName =
+                    firstName;
+
+                let displayedLastName =
+                    lastName;
+
+
+                /*
+                 * Si l'API renvoie seulement "name",
+                 * on l'affiche dans la colonne Nom.
+                 */
+
+                if (
+                    !displayedFirstName &&
+                    !displayedLastName &&
+                    fullName
+                ) {
+
+                    displayedLastName =
+                        fullName;
+
+                }
+
+
+                /*
+                 * IMPORTANT :
+                 * Le backend utilise "matricule",
+                 * pas "student_number".
+                 */
+
+                const matricule =
+                    student.matricule ||
+                    "";
+
+
+                const note =
+                    student.note !== null &&
+                    student.note !== undefined
+                        ? student.note
+                        : "";
+
+
+                return `
+                    <tr data-student-id="${escapeHTML(student.id)}">
+
+                        <td class="matricule">
+                            ${escapeHTML(matricule)}
+                        </td>
+
+                        <td class="student-name">
+                            ${escapeHTML(displayedLastName)}
+                        </td>
+
+                        <td>
+                            ${escapeHTML(displayedFirstName)}
+                        </td>
+
+                        <td>
+
+                            <input
+                                type="number"
+                                class="note-input"
+                                data-student-id="${escapeHTML(student.id)}"
+                                value="${escapeHTML(note)}"
+                                min="0"
+                                max="${escapeHTML(maxGrade)}"
+                                step="0.01"
+                                placeholder="Note"
+                            >
+
+                        </td>
+
+                        <td>
+                            <span class="max-note">
+                                / ${escapeHTML(maxGrade)}
+                            </span>
+                        </td>
+
+                    </tr>
+                `;
+
+            }).join("");
+
+
+        /*
+         * Mettre à jour les données lorsqu'une
+         * note est modifiée.
+         */
+
+        document
+            .querySelectorAll(".note-input")
+            .forEach(input => {
+
+                input.addEventListener(
+                    "input",
+                    function() {
+
+                        const studentId =
+                            String(
+                                this.dataset.studentId
+                            );
+
+                        const student =
+                            students.find(
+                                item =>
+                                    String(item.id) ===
+                                    studentId
+                            );
+
+                        if (student) {
+
+                            student.note =
+                                this.value;
+
+                        }
+
+                        updateStats();
+
+                    }
+                );
+
+            });
+
     }
 
-    if (value < 1) {
-        value = 1;
-    }
 
-    if (value > 400) {
-        value = 400;
-    }
+    /* =========================
+       STATISTIQUES
+    ========================= */
 
-    return value;
-}
+    function updateStats() {
+
+        totalStudents.textContent =
+            students.length;
 
 
-/* =========================================================
-   LIMITER NOTE MAXIMALE
-========================================================= */
+        let entered = 0;
+        let missing = 0;
+        let total = 0;
 
-function limitMaxGrade(input) {
 
-    let value =
-        Number(input.value);
+        students.forEach(student => {
 
-    if (value > 400) {
-        input.value = 400;
-    }
+            const value =
+                parseFloat(student.note);
 
-    if (
-        value < 1 &&
-        input.value !== ""
-    ) {
-        input.value = 1;
-    }
-
-    const max =
-        getMaxGrade();
-
-    document
-        .querySelectorAll(".note-input")
-        .forEach(noteInput => {
-
-            noteInput.max = max;
 
             if (
-                noteInput.value !== "" &&
-                Number(noteInput.value) > max
+                student.note !== "" &&
+                !Number.isNaN(value)
             ) {
 
-                noteInput.value = max;
+                entered++;
+                total += value;
+
+            } else {
+
+                missing++;
 
             }
 
         });
 
-    updateStatisticsFromInputs();
-}
+
+        notesEntered.textContent =
+            entered;
+
+        notesMissing.textContent =
+            missing;
 
 
-/* =========================================================
-   VALIDATION NOTE
-========================================================= */
+        if (entered > 0) {
 
-function validateNote(input) {
+            classAverage.textContent =
+                (total / entered).toFixed(2);
 
-    const max =
-        getMaxGrade();
+        } else {
 
-    if (input.value === "") {
-
-        updateInputStatus(input);
-        updateStatisticsFromInputs();
-
-        return;
-    }
-
-    let value =
-        Number(input.value);
-
-    if (!Number.isFinite(value)) {
-
-        input.value = "";
-
-        updateInputStatus(input);
-        updateStatisticsFromInputs();
-
-        return;
-    }
-
-    if (value < 0) {
-        input.value = 0;
-    }
-
-    if (value > max) {
-        input.value = max;
-    }
-
-    updateInputStatus(input);
-    updateStatisticsFromInputs();
-}
-
-
-/* =========================================================
-   STATUT D'UNE NOTE
-========================================================= */
-
-function updateInputStatus(input) {
-
-    const row =
-        input.closest("tr");
-
-    if (!row) return;
-
-    const statusCell =
-        row.querySelector(".status-cell");
-
-    if (!statusCell) return;
-
-    if (
-        input.value === "" ||
-        input.value === null
-    ) {
-
-        statusCell.innerHTML = `
-            <span class="status status-empty">
-                Non saisie
-            </span>
-        `;
-
-    } else {
-
-        statusCell.innerHTML = `
-            <span class="status status-ok">
-                Saisie
-            </span>
-        `;
-
-    }
-}
-
-
-/* =========================================================
-   STATISTIQUES
-========================================================= */
-
-function updateStatistics(list) {
-
-    document.getElementById(
-        "totalStudents"
-    ).textContent =
-        list.length;
-
-    const notes =
-        list.filter(student =>
-            student.note !== undefined &&
-            student.note !== null &&
-            student.note !== ""
-        );
-
-    document.getElementById(
-        "notesEntered"
-    ).textContent =
-        notes.length;
-
-    document.getElementById(
-        "notesMissing"
-    ).textContent =
-        list.length - notes.length;
-
-    if (!notes.length) {
-
-        document.getElementById(
-            "classAverage"
-        ).textContent =
-            "—";
-
-        return;
-    }
-
-    const total =
-        notes.reduce(
-            (sum, student) =>
-                sum + Number(student.note),
-            0
-        );
-
-    const average =
-        total / notes.length;
-
-    document.getElementById(
-        "classAverage"
-    ).textContent =
-        average.toFixed(2);
-}
-
-
-/* =========================================================
-   STATISTIQUES APRÈS SAISIE
-========================================================= */
-
-function updateStatisticsFromInputs() {
-
-    const inputs =
-        document.querySelectorAll(
-            ".note-input"
-        );
-
-    let entered = 0;
-    let total = 0;
-
-    inputs.forEach(input => {
-
-        if (
-            input.value !== ""
-        ) {
-
-            entered++;
-
-            total +=
-                Number(input.value);
+            classAverage.textContent =
+                "-";
 
         }
 
-    });
-
-    document.getElementById(
-        "totalStudents"
-    ).textContent =
-        inputs.length;
-
-    document.getElementById(
-        "notesEntered"
-    ).textContent =
-        entered;
-
-    document.getElementById(
-        "notesMissing"
-    ).textContent =
-        inputs.length - entered;
-
-    document.getElementById(
-        "classAverage"
-    ).textContent =
-        entered
-            ? (total / entered).toFixed(2)
-            : "—";
-}
+    }
 
 
-/* =========================================================
-   RECHERCHE
-========================================================= */
+    /* =========================
+       RECHERCHE
+    ========================= */
 
-document
-    .getElementById("searchInput")
-    .addEventListener(
+    searchInput.addEventListener(
         "input",
-        function () {
+        function() {
 
             const search =
                 this.value
                     .toLowerCase()
                     .trim();
 
+
+            if (!search) {
+
+                renderStudents(students);
+
+                updateStats();
+
+                return;
+
+            }
+
+
             const filtered =
-                students.filter(
-                    student => {
+                students.filter(student => {
 
-                        return [
+                    const matricule =
+                        String(
+                            student.matricule || ""
+                        ).toLowerCase();
 
-                            student.matricule,
-                            student.first_name,
-                            student.last_name,
-                            student.class_name
+                    const firstName =
+                        String(
+                            student.first_name ||
+                            student.firstname ||
+                            student.prenom ||
+                            ""
+                        ).toLowerCase();
 
-                        ]
-                        .filter(Boolean)
-                        .some(
-                            value =>
-                                String(value)
-                                    .toLowerCase()
-                                    .includes(search)
-                        );
+                    const lastName =
+                        String(
+                            student.last_name ||
+                            student.lastname ||
+                            student.nom ||
+                            ""
+                        ).toLowerCase();
 
-                    }
-                );
+                    const name =
+                        String(
+                            student.name ||
+                            student.full_name ||
+                            ""
+                        ).toLowerCase();
 
-            displayedStudents =
-                filtered;
+                    return (
+                        matricule.includes(search) ||
+                        firstName.includes(search) ||
+                        lastName.includes(search) ||
+                        name.includes(search)
+                    );
 
-            displayStudents(
-                displayedStudents
-            );
+                });
 
-            updateStatistics(
-                displayedStudents
-            );
+
+            renderStudents(filtered);
 
         }
     );
 
 
-/* =========================================================
-   ENREGISTRER LES NOTES
-========================================================= */
+    /* =========================
+       ENREGISTRER LES NOTES
+    ========================= */
 
-async function saveNotes() {
+    async function saveNotes() {
 
-    const classId =
-        document.getElementById(
-            "classSelect"
-        ).value;
+        if (!currentClassId) {
 
-    const subjectId =
-        document.getElementById(
-            "subjectSelect"
-        ).value;
+            showMessage(
+                "Veuillez d'abord sélectionner une classe et afficher les élèves.",
+                "error"
+            );
 
-    const period =
-        document.getElementById(
-            "periodSelect"
-        ).value;
+            return;
 
-    if (!classId) {
+        }
 
-        showError(
-            "Veuillez sélectionner une classe."
-        );
+        if (!currentSubjectId) {
 
-        return;
-    }
+            showMessage(
+                "Veuillez sélectionner une matière.",
+                "error"
+            );
 
-    if (!subjectId) {
+            return;
 
-        showError(
-            "Veuillez sélectionner une matière."
-        );
+        }
 
-        return;
-    }
+        if (!currentPeriod) {
 
-    if (!period) {
+            showMessage(
+                "Veuillez sélectionner une période.",
+                "error"
+            );
 
-        showError(
-            "Veuillez sélectionner une période."
-        );
+            return;
 
-        return;
-    }
+        }
 
-    if (!students.length) {
 
-        showError(
-            "Aucun élève à enregistrer."
-        );
+        const maxGrade =
+            parseFloat(maxGradeInput.value);
 
-        return;
-    }
 
-    const maxGrade =
-        getMaxGrade();
+        if (
+            Number.isNaN(maxGrade) ||
+            maxGrade <= 0 ||
+            maxGrade > 400
+        ) {
 
-    /*
-     * On récupère les notes directement
-     * dans les champs actuellement affichés.
-     */
+            showMessage(
+                "La note maximale doit être comprise entre 1 et 400.",
+                "error"
+            );
 
-    const inputs =
-        document.querySelectorAll(
-            ".note-input"
-        );
+            return;
 
-    const grades = [];
+        }
 
-    inputs.forEach(input => {
 
-        grades.push({
-            student_id:
-                Number(input.dataset.studentId),
+        /*
+         * On récupère toutes les notes actuellement
+         * enregistrées dans students.
+         *
+         * Cela permet de ne pas perdre les notes
+         * lorsqu'une recherche a été utilisée.
+         */
 
-            grade:
-                input.value === ""
-                    ? ""
-                    : Number(input.value)
+        const grades = students.map(student => {
+
+            return {
+                student_id: String(student.id),
+                grade:
+                    student.note === null ||
+                    student.note === undefined ||
+                    student.note === ""
+                        ? ""
+                        : String(student.note)
+            };
+
         });
 
-    });
 
-    const saveButton =
-        document.getElementById(
-            "saveButton"
-        );
+        /* VALIDATION */
 
-    saveButton.disabled = true;
+        for (const item of grades) {
 
-    saveButton.textContent =
-        "Enregistrement...";
+            if (item.grade === "") {
+                continue;
+            }
 
-    hideMessages();
+            const value =
+                parseFloat(item.grade);
 
-    try {
+            if (
+                Number.isNaN(value) ||
+                value < 0 ||
+                value > maxGrade
+            ) {
 
-        const response =
-            await fetch(
-                "/api/grades",
-                {
-                    method: "POST",
+                showMessage(
+                    "Une note est invalide. Les notes doivent être entre 0 et " +
+                    maxGrade +
+                    ".",
+                    "error"
+                );
 
-                    headers: {
-                        "Content-Type":
-                            "application/json",
+                return;
 
-                        "Authorization":
-                            `Bearer ${token}`
-                    },
+            }
 
-                    body:
-                        JSON.stringify({
+        }
+
+
+        saveButton.disabled = true;
+
+        saveButton.textContent =
+            "Enregistrement...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/grades",
+                    {
+                        method: "POST",
+
+                        headers: authHeaders(),
+
+                        body: JSON.stringify({
+
                             class_id:
-                                Number(classId),
+                                currentClassId,
 
                             subject_id:
-                                Number(subjectId),
+                                currentSubjectId,
 
                             period:
-                                period,
+                                currentPeriod,
 
                             max_grade:
                                 maxGrade,
 
                             grades:
                                 grades
+
                         })
-                }
-            );
 
-        if (
-            response.status === 401 ||
-            response.status === 403
-        ) {
+                    }
+                );
 
-            logout();
-            return;
 
-        }
+            const data =
+                await handleResponse(response);
 
-        const data =
-            await response.json();
 
-        if (
-            !response.ok ||
-            !data.success
-        ) {
+            /*
+             * Mettre à jour les valeurs locales.
+             */
 
-            throw new Error(
+            students =
+                students.map(student => {
+
+                    const saved =
+                        grades.find(
+                            item =>
+                                String(
+                                    item.student_id
+                                ) ===
+                                String(student.id)
+                        );
+
+                    return {
+                        ...student,
+                        note:
+                            saved
+                                ? saved.grade
+                                : ""
+                    };
+
+                });
+
+
+            updateStats();
+
+
+            showMessage(
                 data.message ||
-                "Impossible d'enregistrer les notes."
+                "Les notes ont été enregistrées avec succès.",
+                "success"
             );
 
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "Erreur lors de l'enregistrement : " +
+                error.message,
+                "error"
+            );
+
+        } finally {
+
+            saveButton.disabled = false;
+
+            saveButton.textContent =
+                "Enregistrer les notes";
+
         }
-
-        /*
-         * Recharger depuis la base.
-         * Cela garantit que l'écran correspond
-         * exactement aux données enregistrées.
-         */
-
-        await loadStudentsForClass();
-
-        showSuccess(
-            "Les notes ont été enregistrées avec succès."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Erreur enregistrement :",
-            error
-        );
-
-        showError(
-            error.message ||
-            "Erreur lors de l'enregistrement."
-        );
-
-    } finally {
-
-        saveButton.disabled = false;
-
-        saveButton.textContent =
-            "Enregistrer les notes";
 
     }
-}
 
 
-/* =========================================================
-   RÉINITIALISER
-========================================================= */
+    /* =========================
+       REINITIALISER
+    ========================= */
 
-function resetSelection() {
+    function resetPage() {
 
-    document.getElementById(
-        "classSelect"
-    ).value = "";
+        classSelect.value = "";
+        subjectSelect.value = "";
+        periodSelect.value = "";
 
-    document.getElementById(
-        "subjectSelect"
-    ).value = "";
+        maxGradeInput.value = "100";
 
-    document.getElementById(
-        "periodSelect"
-    ).value = "";
+        searchInput.value = "";
 
-    document.getElementById(
-        "maxGrade"
-    ).value = 100;
+        students = [];
 
-    document.getElementById(
-        "searchInput"
-    ).value = "";
+        currentClassId = "";
+        currentSubjectId = "";
+        currentPeriod = "";
 
-    document.getElementById(
-        "studentsTable"
-    ).innerHTML = `
-        <tr>
-            <td colspan="6" class="empty">
-                Sélectionnez une classe,
-                une matière et une période.
-            </td>
-        </tr>
-    `;
+        studentsTable.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty">
+                    Sélectionnez une classe, une matière et une période puis cliquez sur « Afficher les élèves ».
+                </td>
+            </tr>
+        `;
 
-    students = [];
-    displayedStudents = [];
+        updateStats();
 
-    document.getElementById(
-        "totalStudents"
-    ).textContent = "0";
+        hideMessage();
 
-    document.getElementById(
-        "notesEntered"
-    ).textContent = "0";
-
-    document.getElementById(
-        "notesMissing"
-    ).textContent = "0";
-
-    document.getElementById(
-        "classAverage"
-    ).textContent = "—";
-
-    hideMessages();
-}
+    }
 
 
-/* =========================================================
-   MESSAGES
-========================================================= */
+    /* =========================
+       EVENEMENTS
+    ========================= */
 
-function showError(message) {
-
-    const element =
-        document.getElementById(
-            "errorMessage"
-        );
-
-    element.textContent =
-        message;
-
-    element.style.display =
-        "block";
-
-    document.getElementById(
-        "successMessage"
-    ).style.display =
-        "none";
-}
-
-
-function showSuccess(message) {
-
-    const element =
-        document.getElementById(
-            "successMessage"
-        );
-
-    element.textContent =
-        message;
-
-    element.style.display =
-        "block";
-
-    document.getElementById(
-        "errorMessage"
-    ).style.display =
-        "none";
-}
-
-
-function hideMessages() {
-
-    document.getElementById(
-        "errorMessage"
-    ).style.display =
-        "none";
-
-    document.getElementById(
-        "successMessage"
-    ).style.display =
-        "none";
-}
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-function logout() {
-
-    localStorage.removeItem(
-        "school_token"
+    loadButton.addEventListener(
+        "click",
+        loadStudentsForClass
     );
 
-    localStorage.removeItem(
-        "school_user"
+
+    saveButton.addEventListener(
+        "click",
+        saveNotes
     );
 
-    window.location.href = "/";
 
-}
-
-
-/* =========================================================
-   PROTECTION HTML
-========================================================= */
-
-function escapeHtml(value) {
-
-    return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
+    resetButton.addEventListener(
+        "click",
+        resetPage
+    );
 
 
-/* =========================================================
-   INITIALISATION
-========================================================= */
+    maxGradeInput.addEventListener(
+        "change",
+        function() {
 
-loadClasses();
-loadSubjects();
+            /*
+             * Si des élèves sont déjà affichés,
+             * mettre à jour le maximum visible.
+             */
+
+            if (students.length > 0) {
+
+                const max =
+                    parseFloat(this.value) || 100;
+
+                document
+                    .querySelectorAll(".note-input")
+                    .forEach(input => {
+
+                        input.max = max;
+
+                    });
+
+                document
+                    .querySelectorAll(".max-note")
+                    .forEach(element => {
+
+                        element.textContent =
+                            "/ " + max;
+
+                    });
+
+            }
+
+        }
+    );
+
+
+    /* =========================
+       INITIALISATION
+    ========================= */
+
+    async function init() {
+
+        await loadUser();
+
+        await Promise.all([
+            loadClasses(),
+            loadSubjects()
+        ]);
+
+    }
+
+
+    init();
 
 </script>
 
