@@ -527,7 +527,13 @@ app.post(
             const schoolId = req.user.school_id;
 
             const classCheck = await pool.query(
-                `SELECT id FROM classes WHERE id = $1 AND school_id = $2 LIMIT 1`,
+                `
+                SELECT id
+                FROM classes
+                WHERE id = $1
+                AND school_id = $2
+                LIMIT 1
+                `,
                 [class_id, schoolId]
             );
 
@@ -540,23 +546,144 @@ app.post(
 
             }
 
-            const finalMatricule =
+            /*
+             * Si l'utilisateur fournit un matricule,
+             * on le conserve.
+             *
+             * Si aucun matricule n'est fourni,
+             * on en génère un automatiquement.
+             *
+             * Le format reste court :
+             * EL + 8 chiffres
+             */
+            let finalMatricule =
                 matricule && matricule.trim()
                     ? matricule.trim()
-                    : "EL" + Date.now().toString().slice(-8);
+                    : null;
+
+            if (!finalMatricule) {
+
+                let generatedMatricule = null;
+                let attempts = 0;
+
+                while (!generatedMatricule && attempts < 10) {
+
+                    attempts++;
+
+                    const timestamp =
+                        Date.now().toString().slice(-5);
+
+                    const random =
+                        Math.floor(
+                            100 + Math.random() * 900
+                        ).toString();
+
+                    const candidate =
+                        "EL" + timestamp + random;
+
+                    const existing =
+                        await pool.query(
+                            `
+                            SELECT id
+                            FROM students
+                            WHERE matricule = $1
+                            LIMIT 1
+                            `,
+                            [candidate]
+                        );
+
+                    if (existing.rows.length === 0) {
+
+                        generatedMatricule =
+                            candidate;
+
+                    }
+
+                }
+
+                if (!generatedMatricule) {
+
+                    return res.status(500).json({
+                        success: false,
+                        message:
+                            "Impossible de générer un matricule unique. Veuillez réessayer."
+                    });
+
+                }
+
+                finalMatricule =
+                    generatedMatricule;
+            }
+
+            /*
+             * Vérification avant insertion.
+             * On vérifie le matricule fourni ou généré.
+             */
+            const matriculeCheck =
+                await pool.query(
+                    `
+                    SELECT id
+                    FROM students
+                    WHERE matricule = $1
+                    LIMIT 1
+                    `,
+                    [finalMatricule]
+                );
+
+            if (matriculeCheck.rows.length > 0) {
+
+                return res.status(409).json({
+                    success: false,
+                    message: "Ce matricule existe déjà."
+                });
+
+            }
 
             const result = await pool.query(
                 `
                 INSERT INTO students (
-                    school_id, first_name, last_name, matricule,
-                    date_of_birth, gender, phone, class_id, parent_name,
-                    parent_phone, address, photo_url
+                    school_id,
+                    first_name,
+                    last_name,
+                    matricule,
+                    date_of_birth,
+                    gender,
+                    phone,
+                    class_id,
+                    parent_name,
+                    parent_phone,
+                    address,
+                    photo_url
                 )
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                VALUES (
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5,
+                    $6,
+                    $7,
+                    $8,
+                    $9,
+                    $10,
+                    $11,
+                    $12
+                )
                 RETURNING
-                    id, school_id, first_name, last_name, matricule,
-                    date_of_birth, gender, phone, class_id, parent_name,
-                    parent_phone, address, photo_url, created_at
+                    id,
+                    school_id,
+                    first_name,
+                    last_name,
+                    matricule,
+                    date_of_birth,
+                    gender,
+                    phone,
+                    class_id,
+                    parent_name,
+                    parent_phone,
+                    address,
+                    photo_url,
+                    created_at
                 `,
                 [
                     schoolId,
@@ -582,20 +709,40 @@ app.post(
 
         } catch (error) {
 
-            console.error("Erreur ajout élève :", error);
+            console.error(
+                "Erreur ajout élève :",
+                error
+            );
+
+            console.error(
+                "Code PostgreSQL :",
+                error.code
+            );
+
+            console.error(
+                "Contrainte PostgreSQL :",
+                error.constraint
+            );
+
+            console.error(
+                "Détail PostgreSQL :",
+                error.detail
+            );
 
             if (error.code === "23505") {
 
                 return res.status(409).json({
                     success: false,
-                    message: "Ce matricule existe déjà."
+                    message:
+                        "Une donnée unique existe déjà. Vérifiez le matricule."
                 });
 
             }
 
             res.status(500).json({
                 success: false,
-                message: "Impossible d'ajouter l'élève."
+                message:
+                    "Impossible d'ajouter l'élève."
             });
 
         }
